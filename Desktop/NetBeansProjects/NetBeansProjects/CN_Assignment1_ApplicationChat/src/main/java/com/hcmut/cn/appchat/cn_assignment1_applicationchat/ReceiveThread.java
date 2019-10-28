@@ -46,6 +46,15 @@ public class ReceiveThread extends Thread{
         
     }
     
+    public String getFileExtension(File file){
+        if (file == null) {
+            return "";
+        }
+        String name = file.getName();
+        int i = name.lastIndexOf('.');
+        return (i > 0) ? name.substring(i) : "";
+    }
+    
     public void run() {
         
         while (true) {
@@ -64,9 +73,9 @@ public class ReceiveThread extends Thread{
                             saveFileDialog.setMode(SAVE);
                             saveFileDialog.setVisible(true);
                             String path = saveFileDialog.getDirectory();
-                            String filename = file.getName();
+                            String filename = saveFileDialog.getFile();
                             
-                            File newFile = new File(path + filename);
+                            File newFile = new File(path + filename + getFileExtension(file));
                             newFile.createNewFile();
                             
                             Path file_get;
