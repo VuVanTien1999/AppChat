@@ -27,7 +27,7 @@ public class ClientInfo {
         return myIP;
     }
 
-    public int getPORT() {
+    public int getPort() {
         return myActivePORT;
     }
 }

@@ -27,7 +27,7 @@ class ParallelSendThread extends Thread {
 
     ParallelSendThread(File file, ClientInfo otherInfo) {
         this(file);
-        port = otherInfo.getPORT();
+        port = otherInfo.getPort();
         hostname = otherInfo.getIP();
     }
     
