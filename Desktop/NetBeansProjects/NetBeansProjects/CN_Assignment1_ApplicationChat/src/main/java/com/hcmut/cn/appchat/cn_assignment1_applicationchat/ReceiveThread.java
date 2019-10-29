@@ -62,11 +62,10 @@ public class ReceiveThread extends Thread{
                     Socket socket = serverSocket.accept();
                     
                     ObjectInputStream onIn = new ObjectInputStream(socket.getInputStream());
-                    filename_label.setText("line 37");
                     
                     try {
                         File file = (File) onIn.readObject();
-                        filename_label.setText("in try");
+                        filename_label.setText("Receiving");
                         
                         if (file != null) {
                             FileDialog saveFileDialog = new FileDialog(chatWindow);
@@ -74,8 +73,10 @@ public class ReceiveThread extends Thread{
                             saveFileDialog.setVisible(true);
                             String path = saveFileDialog.getDirectory();
                             String filename = saveFileDialog.getFile();
-                            
-                            File newFile = new File(path + filename + getFileExtension(file));
+                            File newFile;
+                            if(filename.equals(file.getName())){
+                                newFile = new File(path + filename);
+                            } else newFile = new File(path + filename + getFileExtension(file));
                             newFile.createNewFile();
                             
                             Path file_get;
@@ -83,7 +84,9 @@ public class ReceiveThread extends Thread{
                             byte[] data = Files.readAllBytes(file_get);
                             
                             Files.write(Paths.get(newFile.getPath()), data);
-                            
+                            if(filename.equals(file.getName())){
+                                filename_label.setText(file.getName() + " is saved");
+                            } else filename_label.setText(filename + getFileExtension(file) + " is saved");
                         }
                         
                     } catch (ClassNotFoundException ex) {
