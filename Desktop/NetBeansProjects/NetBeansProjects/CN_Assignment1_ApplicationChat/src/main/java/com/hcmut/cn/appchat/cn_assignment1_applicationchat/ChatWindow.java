@@ -188,11 +188,12 @@ public class ChatWindow extends javax.swing.JFrame {
         filename_label.setText("Choose File");
         FileDialog fileDialog = new FileDialog(this);
         fileDialog.setVisible(true);
-        String file_name = fileDialog.getFile();
-        String file_dir = fileDialog.getDirectory();
-        
-        filename_label.setText(file_name + " is chosen");
-        file = new File(file_dir, file_name);
+        if(fileDialog.getFile() != null && fileDialog.getDirectory() != null){
+            String file_name = fileDialog.getFile();
+            String file_dir = fileDialog.getDirectory();
+            filename_label.setText(file_name + " is chosen");
+            file = new File(file_dir, file_name);
+        } else filename_label.setText("");
         
         if (file != null) {
             btn_cancel.setEnabled(true);
@@ -203,7 +204,6 @@ public class ChatWindow extends javax.swing.JFrame {
     private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
         // TODO add your handling code here:
         if (file != null) {
-            file.delete();
             file = null;
         }
         
@@ -219,8 +219,7 @@ public class ChatWindow extends javax.swing.JFrame {
         parallelSend.start();
         
         // handle 
-        String filename = filename_label.getText();
-        filename_label.setText(filename + " sent successfully");
+        filename_label.setText(file.getName() + " sent successfully");
         btn_cancel.setEnabled(false);
         btn_send_file.setEnabled(false);
     }//GEN-LAST:event_btn_send_fileActionPerformed
