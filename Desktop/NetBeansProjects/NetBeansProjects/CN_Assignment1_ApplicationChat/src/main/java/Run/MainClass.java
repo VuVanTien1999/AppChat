@@ -5,6 +5,11 @@
  */
 package Run;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.*;
+import java.util.List;
+import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
+import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ListClientUI;
+import java.util.ArrayList;
+
 /**
  *
  * @author Vu Van Tien
@@ -12,9 +17,9 @@ import com.hcmut.cn.appchat.cn_assignment1_applicationchat.*;
 public class MainClass {
     public static void main(String[] args) {
         ClientInfo server = new ClientInfo("localhost", 9000);
-        ClientInfo client = new ClientInfo("localhost", 9001);
+        ClientInfo thisClient = new ClientInfo("localhost", 9001);
         
-        ChatClient chatClient = new ChatClient(server, client);
+        ChatClient chatClient = new ChatClient(server, thisClient);
         chatClient.setUpConnectionToServer();
         
         // class LogInUI
@@ -24,7 +29,17 @@ public class MainClass {
         
         // logInUI.start() 
         
-        ListClientUI listClientUI;
+        List<ClientInfo> list = new ArrayList<ClientInfo>();
+        ClientInfo clientRequest = new ClientInfo("localhohst", 5001);
+        ClientInfo clientTemp = new ClientInfo("localhohst", 5002);
+        list.add(clientRequest);
+        list.add(clientTemp);
+        
+        ListClientUI listClientUI = new ListClientUI(chatClient, list);
+        listClientUI.listen(thisClient.getPort()); // accept
+        
+        
+        
         
         // chatWindow.start()
         

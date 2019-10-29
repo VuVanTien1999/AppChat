@@ -32,20 +32,15 @@ public class ChatWindow extends javax.swing.JFrame {
     private ServerSocket serverSocket;
     private Socket socketSendFile;
     
+    
+
     public ChatWindow() {
         initComponents();
-        
-    }
-
-    public ChatWindow(String client_name) {
-        initComponents();
         this.setVisible(true);
-        name = client_name;
-        this.setTitle(client_name);
     }
 
-    public ChatWindow(Socket socket, String name) {
-        this(name);
+    public ChatWindow(Socket socket) {
+        
         
         client_read = new ReadClientThread(socket);
         client_write = new WriteClientThread(socket);
@@ -55,15 +50,15 @@ public class ChatWindow extends javax.swing.JFrame {
         
     }
 
-    public ChatWindow(ServerSocket serverSocket, Socket socket, String name) {
-        this(socket, name);
+    public ChatWindow(ServerSocket serverSocket, Socket socket) {
+        this(socket);
         this.serverSocket = serverSocket;
         receiveThread = new ReceiveThread(serverSocket, this);
         receiveThread.start();
     }
 
-    public ChatWindow(ServerSocket serverSocket, Socket socketMessage, String name, Socket socketSendFile) {
-        this(serverSocket, socketMessage, name);
+    public ChatWindow(ServerSocket serverSocket, Socket socketMessage, Socket socketSendFile) {
+        this(serverSocket, socketMessage);
         // for send message
         this.socketSendFile = socketSendFile;
         

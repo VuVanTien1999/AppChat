@@ -28,13 +28,13 @@ public class Try_Connect2Client {
             
             ChatWindow chatWindow1 = 
                     new ChatWindow(connect2ChatClient.getServerSocket1(),
-                            connect2ChatClient.getSocket12(), "Client1",
+                            connect2ChatClient.getSocket12(),
                             connect2ChatClient.getSocket12()
                     );
             ChatWindow chatWindow2 = 
                     //new ChatWindow(connect2ChatClient.getServerSocket2(),connect2ChatClient.getSocket21Accept(), "Client2");
                     new ChatWindow(connect2ChatClient.getServerSocket2(),
-                            connect2ChatClient.getSocket21Accept(), "Client2",
+                            connect2ChatClient.getSocket21Accept(),
                             connect2ChatClient.getSocket21()
                     );
         }

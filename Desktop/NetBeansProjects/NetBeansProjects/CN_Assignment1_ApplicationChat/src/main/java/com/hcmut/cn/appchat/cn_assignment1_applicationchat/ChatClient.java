@@ -26,7 +26,7 @@ public class ChatClient {
     private String accountInfo;
     private DataInputStream toClient;
     private DataOutputStream fromClient;
-    private static Set<ClientInfo> listClient = new HashSet<>();
+    private static List<ClientInfo> listClient = new ArrayList<ClientInfo>();
         
     public ChatClient(ClientInfo _serverInfo, ClientInfo _myInfo) {
         serverInfo = _serverInfo;
@@ -245,5 +245,9 @@ public class ChatClient {
 
     String getMyIP() {
         return myInfo.getIP();
+    }
+
+    ClientInfo getClientInfo() {
+        return myInfo;
     }
 }

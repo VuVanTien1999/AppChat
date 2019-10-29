@@ -24,15 +24,21 @@ public class ServerSocketThread extends Thread{
     }
     
     public void run() {
-        try {
-            returnSocket = serverSocket.accept();
-        } catch (IOException ex) {
-            Logger.getLogger(ServerSocketThread.class.getName()).log(Level.SEVERE, null, ex);
+        while (true) {
+            try {
+                returnSocket = serverSocket.accept();
+            } catch (IOException ex) {
+                Logger.getLogger(ServerSocketThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        
+
     }
 
     public Socket getSocket() {
         return returnSocket;
+    }
+    
+    public void setNULL() {
+        this.returnSocket = null;
     }
 }

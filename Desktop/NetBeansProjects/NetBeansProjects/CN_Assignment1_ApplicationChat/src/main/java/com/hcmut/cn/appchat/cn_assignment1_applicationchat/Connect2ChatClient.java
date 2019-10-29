@@ -11,14 +11,18 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ServerSocketThread;
+import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
 
 /**
  *
  * @author Vu Van Tien
  */
 public class Connect2ChatClient {
-    private ChatClient chatClient1;
-    private ChatClient chatClient2;
+//    private ChatClient chatClient1;
+//    private ChatClient chatClient2;
+    
+    private ClientInfo clientInfo1;
+    private ClientInfo clientInfo2;
     
     private ServerSocket serverSocket1;
     private ServerSocket serverSocket2;
@@ -28,14 +32,19 @@ public class Connect2ChatClient {
     
     private Socket socket21_accept;
     
-    public Connect2ChatClient(ChatClient chatClient1, ChatClient chatClient2) {
-        this.chatClient1 = chatClient1;
-        this.chatClient2 = chatClient2;
-        
-        serverSocket1 = this.createServerSocket(chatClient1.getMyPort());
-        serverSocket2 = this.createServerSocket(chatClient2.getMyPort());
-        
-        this.createConnection();
+//    public Connect2ChatClient(ChatClient chatClient1, ChatClient chatClient2) {
+//        this.chatClient1 = chatClient1;
+//        this.chatClient2 = chatClient2;
+//        
+//        serverSocket1 = this.createServerSocket(chatClient1.getMyPort());
+//        serverSocket2 = this.createServerSocket(chatClient2.getMyPort());
+//        
+//        this.createConnection();
+//    }
+    
+    public Connect2ChatClient(ClientInfo clientInfo1, ClientInfo clientInfo2) {
+        this.clientInfo1 = clientInfo1;
+        this.clientInfo2 = clientInfo2;
     }
     
     private ServerSocket createServerSocket(int port){
@@ -56,13 +65,13 @@ public class Connect2ChatClient {
         serverSocketThread2.start();
         
         try {
-            socket12 = new Socket(chatClient2.getMyIP(), chatClient2.getMyPort());
+            socket12 = new Socket(clientInfo2.getIP(), clientInfo2.getPort());
         } catch (IOException ex) {
             Logger.getLogger(Connect2ChatClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         try {
-            socket21 = new Socket(chatClient1.getMyIP(), chatClient1.getMyPort());
+            socket21 = new Socket(clientInfo1.getIP(), clientInfo1.getPort());
         } catch (IOException ex) {
             Logger.getLogger(Connect2ChatClient.class.getName()).log(Level.SEVERE, null, ex);
         }
