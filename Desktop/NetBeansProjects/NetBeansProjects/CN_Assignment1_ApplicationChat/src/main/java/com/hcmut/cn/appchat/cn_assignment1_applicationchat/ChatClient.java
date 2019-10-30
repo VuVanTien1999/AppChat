@@ -99,8 +99,11 @@ public class ChatClient {
     }
     
     public List<ClientInfo> getClientList() {
+        return this.listClient;        
+    }
         
-        GetClientListThread getClientListThread = new GetClientListThread(this.fromClient, this.toClient, this.listClient);
+    public void refreshClientList() {
+        GetClientListThread getClientListThread = new GetClientListThread(this.fromClient, this.toClient);
         
         getClientListThread.start();
         
@@ -108,9 +111,11 @@ public class ChatClient {
             this.listClient = getClientListThread.getClientList();
         }
         
-        return this.listClient;
+        synchronized(this) {
+            notify();
+        }
     }
-        
+    
     public Socket accept() {
         try {
             myServerSocket = new ServerSocket(myInfo.getPort());
