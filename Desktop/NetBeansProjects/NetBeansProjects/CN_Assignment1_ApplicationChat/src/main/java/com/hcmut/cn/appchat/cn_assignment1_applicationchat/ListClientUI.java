@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ChatWindow;
-
+import javax.swing.DefaultListModel;
 /**
  *
  * @author nguye
@@ -24,46 +24,56 @@ public class ListClientUI extends javax.swing.JFrame {
     private static List<ClientInfo> listClient;
     private Socket socket;
     private ChatClient chatClient;
+    private ServerSocket serverSocket;
     /**
      * Creates new form ListClientUI
      */
     public ListClientUI(List<ClientInfo> listClient) {
         initComponents();
+        this.setVisible(true);
         this.listClient = listClient;
     }
 
     public ListClientUI(ChatClient chatClient, List<ClientInfo> list) {
         this(list);
+        DefaultListModel model = new DefaultListModel();
+        
+        for (int i = 0; i < list.size(); i++) {
+            model.addElement(list.get(i).getPort());
+        }
+        
+        this.activeUserList.setModel(model);
+        
         this.chatClient = chatClient;
         
         //  
-        ServerSocket serverSocket;
+        //ServerSocket serverSocket;
         try {
             serverSocket = new ServerSocket(chatClient.getMyPort());
             ServerSocketThread serverSocketThread = new ServerSocketThread(serverSocket);
             serverSocketThread.start();
             
             
-            while (true) {
-                Socket socket;
-                if (serverSocketThread.getSocket() != null) {
-                    socket = serverSocketThread.getSocket();
-                    serverSocketThread.setNULL();
-                    
-                    ClientInfo otherInfo = new ClientInfo(socket.getInetAddress().getHostAddress(), socket.getPort());
-                    
+//            while (true) {
+//                Socket socket;
+//                if (serverSocketThread.getSocket() != null) {
+//                    System.out.println("Accept socket");
+//                    socket = serverSocketThread.getSocket();
+//                    serverSocketThread.setNULL();
+//                    
+//                    ClientInfo otherInfo = new ClientInfo(socket.getInetAddress().getHostAddress(), socket.getPort());
+//                    
 //                    ChatWindowThread chatWindowThread = new ChatWindowThread(
-//                            connect2ChatClient.getServerSocket2(),
-//                            connect2ChatClient.getSocket21Accept(),
-//                            connect2ChatClient.getSocket21()
+//                            serverSocket,
+//                            socket,
+//                            new Socket(otherInfo.getIP(), otherInfo.getPort())
 //                    );
 //                    chatWindowThread.start();
-                    
-                }
-                
-                
-                
-            }
+//                    
+//                }
+//                
+//                               
+//            }
             
             
             
@@ -93,6 +103,13 @@ public class ListClientUI extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        activeUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        activeUserList.setVisibleRowCount(-1);
+        activeUserList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                activeUserListMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(activeUserList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -108,12 +125,40 @@ public class ListClientUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(25, 25, 25))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void activeUserListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_activeUserListMouseClicked
+        // TODO add your handling code here:
+        
+        if (activeUserList.getSelectedIndex() != -1) {
+            System.out.println("Click: " + activeUserList.getSelectedIndex());
+            ClientInfo otherInfo = listClient.get(activeUserList.getSelectedIndex());
+            
+            try {
+                Socket socketToOther = new Socket(otherInfo.getHost(), otherInfo.getPort());
+
+                ChatWindowThread chatWindowThread = new ChatWindowThread(
+                        this.serverSocket,
+                        socketToOther,
+                        socketToOther
+                );
+                System.out.println("Socket send");
+                chatWindowThread.start();
+
+            } catch (IOException ex) {
+                Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+            }
+            
+        }
+        
+        activeUserList.clearSelection();
+    }//GEN-LAST:event_activeUserListMouseClicked
 
     /**
      * @param args the command line arguments

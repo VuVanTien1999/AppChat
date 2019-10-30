@@ -7,12 +7,12 @@ package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-import java.util.logging.*;
-
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ReadClientThread;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.WriteClientThread;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.*;
 
 /**
  *
@@ -32,7 +32,7 @@ public class ChatClient {
         serverInfo = _serverInfo;
         myInfo = _myInfo;
     }
-        
+    
     public void setUpConnectionToServer() {
         try {
             Socket socket = new Socket(this.serverInfo.getHost(), this.serverInfo.getPort());
@@ -44,7 +44,7 @@ public class ChatClient {
             } catch (IOException ex) {
                 System.out.println("Error getting input stream: " + ex.getMessage());
                 ex.printStackTrace();
-            } 
+            }
         } catch (UnknownHostException ex) {
             System.out.println("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
@@ -63,7 +63,7 @@ public class ChatClient {
             fromClient.writeUTF(new String(password));
             fromClient.writeUTF(this.myInfo.getHost());
             fromClient.writeUTF(String.valueOf(this.myInfo.getPort()));
-
+                       
             response = toClient.readUTF();
             System.out.print(response);            
         } catch (IOException ex) {
@@ -101,15 +101,15 @@ public class ChatClient {
     public List<ClientInfo> getClientList() {
         return this.listClient;        
     }
-        
+            
     public void refreshClientList() {
         GetClientListThread getClientListThread = new GetClientListThread(this.fromClient, this.toClient);
-        
+            
         getClientListThread.start();
-        
+                
         synchronized(getClientListThread) {
             this.listClient = getClientListThread.getClientList();
-        }
+            }
         
         synchronized(this) {
             notify();
@@ -154,6 +154,8 @@ public class ChatClient {
         return mySocket;
     }
     
+    public static void main(String[] args) {}
+
     public String getMyHost() {
         return this.myInfo.getHost();
     }
@@ -161,6 +163,8 @@ public class ChatClient {
     public int getMyPort() {
         return this.myInfo.getPort();
     }
-    
-    public static void main(String[] args) {}
+
+    ClientInfo getClientInfo() {
+        return myInfo;
+    }
 }

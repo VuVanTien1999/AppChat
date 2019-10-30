@@ -41,7 +41,7 @@ public class ChatWindow extends javax.swing.JFrame {
 
     public ChatWindow(Socket socket) {
         
-        
+        this();
         client_read = new ReadClientThread(socket);
         client_write = new WriteClientThread(socket);
         
