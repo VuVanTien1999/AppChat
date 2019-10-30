@@ -9,17 +9,18 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import javafx.util.*;
 
 /**
  *
- * @author nguye
+ * @author Viet Hoang Nguyen
+ * 
  */
 
 public class UserThread extends Thread {
     private Socket serverSocket;
     private ChatServer server;
-    private String usernameOwningThread;
+
+    private String usernameThread;
     
     private DataInputStream toServer;
     private DataOutputStream fromServer;
@@ -34,7 +35,6 @@ public class UserThread extends Thread {
             toServer = new DataInputStream(serverSocket.getInputStream());
             fromServer = new DataOutputStream(serverSocket.getOutputStream());
             
-            // Create or Verify account sent from client
             do {
                 String temp = toServer.readUTF(); 
                 
@@ -66,8 +66,9 @@ public class UserThread extends Thread {
 
                     System.out.print(System.getProperty("line.separator") + "Verify: " + username + " " + password);
 
+                    //Read file and find acocunt info 
                     if (server.isAccountValid(username, password, host, port)) {
-                        this.usernameOwningThread = username;
+                        this.usernameThread = username;
                         fromServer.writeUTF("true");
                         break;
                     }
@@ -75,12 +76,15 @@ public class UserThread extends Thread {
                 }
             } while(true);
             
+            List<AccountProfile> userList;
             while(true) {
-                List<AccountProfile> listActiveUser = this.server.getUserProfile();
-                fromServer.writeUTF(String.valueOf(listActiveUser.size()));    
+                userList = this.server.getUserList();
+                fromServer.writeUTF(String.valueOf(userList.size()));    
 
-                for (int i = 0 ; i < listActiveUser.size(); i++) {
-                    AccountProfile temp = listActiveUser.get(i);
+                for (int i = 0 ; i < userList.size(); i++) {
+                    AccountProfile temp = userList.get(i);
+
+                    if (temp.getUsername().equals(this.usernameThread)) continue;
                     fromServer.writeUTF(temp.getUsername());
                     fromServer.writeUTF(temp.getDisplayedName());
                     fromServer.writeUTF(String.valueOf(temp.getActiveStatus()));
@@ -98,9 +102,5 @@ public class UserThread extends Thread {
             System.out.println("Error in UserThread: " + ex.getMessage());
             ex.printStackTrace();
         }
-    }
-           
-    public String getUsernameOwningThread() {
-        return this.usernameOwningThread;
-    }
+    }  
 }

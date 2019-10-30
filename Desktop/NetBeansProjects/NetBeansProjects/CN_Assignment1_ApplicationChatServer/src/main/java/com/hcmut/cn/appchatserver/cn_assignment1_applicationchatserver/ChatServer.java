@@ -11,7 +11,8 @@ import java.util.*;
 
 /**
  *
- * @author nguye
+ * @author Viet Hoang Nguyen
+ * 
  */
 
 public class ChatServer {
@@ -128,13 +129,8 @@ public class ChatServer {
         return false;
     }
     
-    // Main tasks
-    public List<AccountProfile> getUserProfile() {
-        List<AccountProfile> user = new ArrayList<AccountProfile>();
-        
-        user = this.userList;
-        
-        return user;
+    public List<AccountProfile> getUserList() {
+        return this.userList;
     }
     
     public static void main(String[] args) { 

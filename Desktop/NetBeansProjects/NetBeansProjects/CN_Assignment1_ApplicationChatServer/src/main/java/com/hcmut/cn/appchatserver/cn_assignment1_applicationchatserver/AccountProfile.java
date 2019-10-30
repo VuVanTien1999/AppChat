@@ -8,16 +8,16 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 
 /**
  *
- * @author nguye
+ * @author Viet Hoang Nguyen
+ * 
  */
 
 public class AccountProfile {
-    private String username, password, displayedName;
-    
+    private String username, password, displayedName;    
     private boolean activeStatus;
     
-    private String host = "";
-    private int port = 0;
+    private String host;
+    private int port;
     
     public AccountProfile(String username, String password, String displayedName) {
         this.username = username;
@@ -34,21 +34,13 @@ public class AccountProfile {
         return this.username.equals(username) && this.password.equals(password);
     }
     
-    public void setActiveStatus(boolean status) {
-        this.activeStatus = status;
-    }
-    
-    public void setHost(String host) {
-        this.host = host;
-    }
-    
-    public void setPort(int port) {
-        this.port = port;
-    }
-    
     public String getUsername() {
         return this.username;
     }
+
+    public String getDisplayedName() {
+        return this.displayedName;
+    } 
     
     public boolean getActiveStatus() {
         return this.activeStatus;
@@ -62,7 +54,15 @@ public class AccountProfile {
         return this.port;
     }
     
-    public String getDisplayedName() {
-        return this.displayedName;
-    }       
+    public void setActiveStatus(boolean status) {
+        this.activeStatus = status;
+    }
+    
+    public void setHost(String host) {
+        this.host = host;
+    }
+    
+    public void setPort(int port) {
+        this.port = port;
+    } 
 }
