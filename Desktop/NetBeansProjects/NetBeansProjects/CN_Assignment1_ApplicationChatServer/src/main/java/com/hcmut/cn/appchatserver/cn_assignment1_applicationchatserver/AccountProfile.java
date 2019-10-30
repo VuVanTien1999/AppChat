@@ -16,8 +16,8 @@ public class AccountProfile {
     private String username, password, displayedName;    
     private boolean activeStatus;
     
-    private String host;
-    private int port;
+    private String host = "None";
+    private int port = 0;
     
     public AccountProfile(String username, String password, String displayedName) {
         this.username = username;

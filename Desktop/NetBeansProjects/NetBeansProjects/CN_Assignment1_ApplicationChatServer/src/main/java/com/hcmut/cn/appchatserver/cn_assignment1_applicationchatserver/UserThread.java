@@ -93,7 +93,7 @@ public class UserThread extends Thread {
                 }
 
                 try {
-                    Thread.sleep(10 * 1000);
+                    Thread.sleep(20 * 1000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                 }
