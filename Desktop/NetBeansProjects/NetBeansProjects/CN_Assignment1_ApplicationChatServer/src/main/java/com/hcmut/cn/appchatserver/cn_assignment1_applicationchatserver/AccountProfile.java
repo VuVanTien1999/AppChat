@@ -16,8 +16,8 @@ public class AccountProfile {
     
     private boolean activeStatus;
     
-    private String IP;
-    private int port;
+    private String host = "";
+    private int port = 0;
     
     public AccountProfile(String username, String password, String displayedName) {
         this.username = username;
@@ -38,8 +38,8 @@ public class AccountProfile {
         this.activeStatus = status;
     }
     
-    public void setIP(String IP) {
-        this.IP = IP;
+    public void setHost(String host) {
+        this.host = host;
     }
     
     public void setPort(int port) {
@@ -54,8 +54,8 @@ public class AccountProfile {
         return this.activeStatus;
     }
     
-    public String getIP() {
-        return this.IP;
+    public String getHost() {
+        return this.host;
     }    
     
     public int getPort() {

@@ -19,7 +19,6 @@ import javafx.util.*;
 public class UserThread extends Thread {
     private Socket serverSocket;
     private ChatServer server;
-
     private String usernameOwningThread;
     
     private DataInputStream toServer;
@@ -57,15 +56,17 @@ public class UserThread extends Thread {
                     }
                 }
                 else if (temp.equals("Verify account")) {
-                    String username, password;
+                    String username, password, host;
+                    int port;
                 
                     username = toServer.readUTF();
                     password = toServer.readUTF();
+                    host = toServer.readUTF();
+                    port = Integer.valueOf(toServer.readUTF());
 
                     System.out.print(System.getProperty("line.separator") + "Verify: " + username + " " + password);
 
-                    //Read file and find acocunt info 
-                    if (server.isAccountValid(username, password)) {
+                    if (server.isAccountValid(username, password, host, port)) {
                         this.usernameOwningThread = username;
                         fromServer.writeUTF("true");
                         break;
@@ -74,20 +75,23 @@ public class UserThread extends Thread {
                 }
             } while(true);
             
-            // Send active user to client 
-            SendActiveUserListThread sending = new SendActiveUserListThread(this.server, fromServer);
-            sending.start();
-            
             while(true) {
-                String temp = toServer.readUTF(); 
-                
-                if (temp.equals("Request to connect")) {
-                    String requiredUsername = toServer.readUTF();
-                    
-                    new RequestConnectionThread(this.server, toServer, fromServer, this.usernameOwningThread, requiredUsername).start();
+                List<AccountProfile> listActiveUser = this.server.getUserProfile();
+                fromServer.writeUTF(String.valueOf(listActiveUser.size()));    
+
+                for (int i = 0 ; i < listActiveUser.size(); i++) {
+                    AccountProfile temp = listActiveUser.get(i);
+                    fromServer.writeUTF(temp.getUsername());
+                    fromServer.writeUTF(temp.getDisplayedName());
+                    fromServer.writeUTF(String.valueOf(temp.getActiveStatus()));
+                    fromServer.writeUTF(temp.getHost());
+                    fromServer.writeUTF(String.valueOf(temp.getPort()));
                 }
-                else if (temp.equals("Quit")) {
-                    break;
+
+                try {
+                    Thread.sleep(10 * 1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                 }
             }
         } catch (IOException ex) {

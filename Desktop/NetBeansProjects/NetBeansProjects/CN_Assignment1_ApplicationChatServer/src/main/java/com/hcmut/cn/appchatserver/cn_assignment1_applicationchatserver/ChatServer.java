@@ -8,8 +8,6 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.stream.*;
-import javafx.util.*;
 
 /**
  *
@@ -115,7 +113,7 @@ public class ChatServer {
         return true;
     }
     
-    public boolean isAccountValid(String username, String password) {
+    public boolean isAccountValid(String username, String password, String host, int port) {
         AccountProfile validAccount = this.userList.stream()
                     .filter(user -> user.isAccountValid(username, password))
                     .findAny()
@@ -123,6 +121,8 @@ public class ChatServer {
         
         if (validAccount != null) {
             validAccount.setActiveStatus(true);
+            validAccount.setHost(host);
+            validAccount.setPort(port);
             return true;
         }
         return false;
@@ -130,31 +130,11 @@ public class ChatServer {
     
     // Main tasks
     public List<AccountProfile> getUserProfile() {
-        List<AccountProfile> activeUser = new ArrayList<AccountProfile>();
+        List<AccountProfile> user = new ArrayList<AccountProfile>();
         
-        activeUser = this.userList;
+        user = this.userList;
         
-        return activeUser;
-        
-        //return this.userList.stream().filter(user -> user.getActiveStatus()).collect(Collectors.toList());
-    }
-    
-    public Pair<String, Integer> requestToClient(String requestingUser, String requestedUser) {
-        UserThread requestedUserThread = this.userThreads.stream()
-                .filter(thread -> thread.getUsernameOwningThread().equals(requestedUser))
-                .findAny()
-                .orElse(null);
-        
-        if (requestedUserThread == null) return new Pair<String, Integer>("", 0);
-        else {
-            AccountProfile requestedUserInfo = this.userList.stream()
-                    .filter(user -> user.getUsername().equals(requestedUser))
-                    .findAny()
-                    .orElse(null);
-            
-            if (requestedUserInfo == null) return new Pair<String, Integer>("", 0);
-            else return new Pair<String, Integer>(requestedUserInfo.getIP(), requestedUserInfo.getPort());
-        }         
+        return user;
     }
     
     public static void main(String[] args) { 
