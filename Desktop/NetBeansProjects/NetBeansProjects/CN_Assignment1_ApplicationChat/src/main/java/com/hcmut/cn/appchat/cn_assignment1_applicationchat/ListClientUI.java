@@ -51,14 +51,13 @@ public class ListClientUI extends javax.swing.JFrame {
                     serverSocketThread.setNULL();
                     
                     ClientInfo otherInfo = new ClientInfo(socket.getInetAddress().getHostAddress(), socket.getPort());
-                    Connect2ChatClient connect2ChatClient = new Connect2ChatClient(otherInfo, chatClient.getClientInfo());
                     
-                    ChatWindowThread chatWindowThread = new ChatWindowThread(
-                            connect2ChatClient.getServerSocket2(),
-                            connect2ChatClient.getSocket21Accept(),
-                            connect2ChatClient.getSocket21()
-                    );
-                    chatWindowThread.start();
+//                    ChatWindowThread chatWindowThread = new ChatWindowThread(
+//                            connect2ChatClient.getServerSocket2(),
+//                            connect2ChatClient.getSocket21Accept(),
+//                            connect2ChatClient.getSocket21()
+//                    );
+//                    chatWindowThread.start();
                     
                 }
                 

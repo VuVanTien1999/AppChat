@@ -7,12 +7,12 @@ package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.util.logging.*;
+
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ReadClientThread;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.WriteClientThread;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.*;
 
 /**
  *
@@ -26,31 +26,25 @@ public class ChatClient {
     private String accountInfo;
     private DataInputStream toClient;
     private DataOutputStream fromClient;
-    private static List<ClientInfo> listClient = new ArrayList<ClientInfo>();
+    private List<ClientInfo> listClient = new ArrayList<ClientInfo>();
         
     public ChatClient(ClientInfo _serverInfo, ClientInfo _myInfo) {
         serverInfo = _serverInfo;
         myInfo = _myInfo;
-        
     }
-    
-    
-    
+        
     public void setUpConnectionToServer() {
         try {
-            Socket socket = new Socket(this.serverInfo.getIP(), this.serverInfo.getPort());
+            Socket socket = new Socket(this.serverInfo.getHost(), this.serverInfo.getPort());
             System.out.println("Connected to the chat server");
             
             try {
                 toClient = new DataInputStream(socket.getInputStream());
                 fromClient = new DataOutputStream(socket.getOutputStream());
-                
-//                fromClient.writeUTF(getIP()); // Check THIS
-//                fromClient.writeUTF(String.valueOf(getPort())); // Check THIS
             } catch (IOException ex) {
                 System.out.println("Error getting input stream: " + ex.getMessage());
                 ex.printStackTrace();
-            }
+            } 
         } catch (UnknownHostException ex) {
             System.out.println("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
@@ -67,7 +61,9 @@ public class ChatClient {
             fromClient.writeUTF("Verify account");
             fromClient.writeUTF(username);
             fromClient.writeUTF(new String(password));
-                       
+            fromClient.writeUTF(this.myInfo.getHost());
+            fromClient.writeUTF(String.valueOf(this.myInfo.getPort()));
+
             response = toClient.readUTF();
             System.out.print(response);            
         } catch (IOException ex) {
@@ -102,32 +98,19 @@ public class ChatClient {
         else return false;
     }
     
-    public void getClientList() {
-        try {
-            fromClient.writeUTF("Get list of client");
-            
-            String clientUsername, clientDisplayedname, clientHost;
-            int numOfClient = Integer.valueOf(toClient.readUTF());
-            int clientPort;
-            
-            for (int i = 0; i < numOfClient; i++) {
-                clientHost = toClient.readUTF();
-                clientPort = Integer.valueOf(toClient.readUTF());
-                
-                listClient.add(new ClientInfo(clientHost, clientPort));
-            }
-        } catch (IOException ex) {
-            System.out.println("Error writing to server: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-    
-    public void listActiveUsers(Set<ClientInfo> listClient) {
-        ListClientUI list = new ListClientUI(this.listClient);
-        list.setVisible(true);
+    public List<ClientInfo> getClientList() {
         
+        GetClientListThread getClientListThread = new GetClientListThread(this.fromClient, this.toClient, this.listClient);
+        
+        getClientListThread.start();
+        
+        synchronized(getClientListThread) {
+            this.listClient = getClientListThread.getClientList();
+        }
+        
+        return this.listClient;
     }
-    
+        
     public Socket accept() {
         try {
             myServerSocket = new ServerSocket(myInfo.getPort());
@@ -158,7 +141,7 @@ public class ChatClient {
     
     public Socket connectSocket(ClientInfo otherClient) {
         try {
-            mySocket = new Socket(otherClient.getIP(), otherClient.getPort());
+            mySocket = new Socket(otherClient.getHost(), otherClient.getPort());
         } catch (IOException ex) {
             System.out.println("Error reading from server: " + ex.getMessage());
             ex.printStackTrace();
@@ -166,88 +149,13 @@ public class ChatClient {
         return mySocket;
     }
     
-    public static void main(String[] args) {
-        
-        ClientInfo server = new ClientInfo("localhost", 9000);
-        ClientInfo client = new ClientInfo("192.168.18.10", 9999); //???
-        
-        ChatClient myClient = new ChatClient(server,client);  
-        myClient.setUpConnectionToServer();  
-               
-        ChatApplicationSigninUI clientSigninUI = new ChatApplicationSigninUI();
-        clientSigninUI.setVisible(true);
-
-        ChatApplicationSignupUI clientSignupUI;
-
-        while(true) {
-            synchronized(clientSigninUI) {
-                try {
-                    clientSigninUI.wait();
-                }
-                catch(InterruptedException e){
-                    e.printStackTrace();
-                }
-            }
-
-            if (clientSigninUI.isSignin()) {
-                if (!myClient.verifyAccount(clientSigninUI.getUsernameSignin(), 
-                        clientSigninUI.getPasswordSignin())) {
-                    clientSigninUI.label.setText("Wrong username or password.");
-                    clientSigninUI.hideAccountInfo();
-                }
-                else {
-                    clientSigninUI.setVisible(false);
-                    break;
-                }
-            }
-            else {
-                clientSignupUI = new ChatApplicationSignupUI();
-                clientSignupUI.setVisible(true);
-                clientSigninUI.setVisible(false);
-                
-                while(true) {
-                    synchronized(clientSignupUI) {
-                        try {
-                            clientSignupUI.wait();
-                        }
-                        catch(InterruptedException e){
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (myClient.createAccount(clientSignupUI.getUsernameSignup(), 
-                            clientSignupUI.getPasswordSignup(), 
-                            clientSignupUI.getDisplayednaemSignup())) break;
-                    else {
-                        
-                        clientSignupUI.label.setText("Create acocunt failed. Try again.");
-                    } 
-                }
-                
-                clientSigninUI.setVisible(true);
-                clientSignupUI.setVisible(false);
-                clientSigninUI.label.setText("Re-enter username and password to login.");
-            }
-        }
-        
-        myClient.getClientList();
-        
-        
+    public String getMyHost() {
+        return this.myInfo.getHost();
     }
-
-    int getMyPort() {
-        return myInfo.getPort();
+    
+    public int getMyPort() {
+        return this.myInfo.getPort();
     }
-
-    public boolean acceptConnect() {
-        return true;
-    }
-
-    String getMyIP() {
-        return myInfo.getIP();
-    }
-
-    ClientInfo getClientInfo() {
-        return myInfo;
-    }
+    
+    public static void main(String[] args) {}
 }

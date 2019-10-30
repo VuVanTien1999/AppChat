@@ -4,30 +4,56 @@
  * and open the template in the editor.
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
-import java.io.IOException;
-import java.net.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Vu Van Tien
+ * 
  */
 public class ClientInfo {
+    private String username, displayedName, host = "";
+    private boolean activeStatus = false;
+    private int port = 0;
     
-    private String myIP;
-    private int myActivePORT;
+    public ClientInfo(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
     
-    public ClientInfo(String IP, int PORT) {
-            myIP = IP;
-            myActivePORT = PORT;
+    public ClientInfo(String username, String displayedName, boolean activeStatus, String host, int port) {
+        this.username = username;
+        this.displayedName = displayedName;
+        this.activeStatus = activeStatus;
+        this.host = host;
+        this.port = port;
     }
 
-    public String getIP() {
-        return myIP;
+    public String getUsername() {
+        return this.username;
+    }
+    
+    public String getDisplayedName() {
+        return this.displayedName;
+    } 
+    
+    public boolean getActiveStatus() {
+        return this.activeStatus;
+    }
+    
+    public String getHost() {
+        return this.host;
     }
 
     public int getPort() {
-        return myActivePORT;
+        return this.port;
     }
+    
+    public void setActiveStatus(boolean status) {
+        this.activeStatus = status;
+    }
+    
+    public void setHostAndPort(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }    
 }
