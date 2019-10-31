@@ -99,6 +99,29 @@ public class ChatClient {
     }
     
     public List<ClientInfo> getClientList() {
+        try {         
+            this.fromClient.writeUTF("Get list of users");
+
+            int numOfClient = Integer.valueOf(this.toClient.readUTF());
+            String clientUsername, clientDisplayedname, clientHost;
+            boolean clientActiveStatus;
+            int clientPort;
+
+            for (int i = 0; i < numOfClient - 1; i++) {
+                clientUsername = this.toClient.readUTF();
+                clientDisplayedname = this.toClient.readUTF();
+                clientActiveStatus = Boolean.valueOf(this.toClient.readUTF());
+                clientHost = this.toClient.readUTF();
+                clientPort = Integer.valueOf(this.toClient.readUTF());
+                System.out.println(clientUsername + " " + clientDisplayedname);
+                System.out.println(clientHost + " " + String.valueOf(clientPort));
+                this.listClient.add(new ClientInfo(clientUsername, clientDisplayedname, clientActiveStatus, clientHost, clientPort));
+            }
+
+        } catch (IOException ex) {
+            System.out.println("Error writing to server: " + ex.getMessage());
+            ex.printStackTrace();
+        }
         return this.listClient;        
     }
             

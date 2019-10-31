@@ -92,11 +92,11 @@ public class UserThread extends Thread {
                     fromServer.writeUTF(String.valueOf(temp.getPort()));
                 }
 
-                try {
-                    Thread.sleep(20 * 1000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
+//                try {
+//                    Thread.sleep(20 * 1000);
+//                } catch (InterruptedException ie) {
+//                    Thread.currentThread().interrupt();
+//                }
             }
         } catch (IOException ex) {
             System.out.println("Error in UserThread: " + ex.getMessage());

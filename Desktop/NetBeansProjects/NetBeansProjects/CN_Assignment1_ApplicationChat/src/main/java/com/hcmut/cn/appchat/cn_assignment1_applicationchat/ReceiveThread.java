@@ -31,19 +31,18 @@ public class ReceiveThread extends Thread{
     private ChatWindow chatWindow;
     
     private ServerSocket serverSocket;
-    
+    private Socket returnSocket;
 
-    ReceiveThread(Socket socket, ChatWindow chatWindow) {
-        this.filename_label = chatWindow.getFilenameLabel();
-        port = socket.getLocalPort();
-        this.chatWindow = chatWindow;
+
+    ReceiveThread(ServerSocket serverSocket, ChatWindow thisChatWD) {
+        
+        this.serverSocket = serverSocket;
     }
 
-    ReceiveThread(ServerSocket serverSocket, ChatWindow aThis) {
-        this.filename_label = aThis.getFilenameLabel();
-        this.chatWindow = aThis;
-        this.serverSocket = serverSocket;
-        
+    ReceiveThread(Socket returnSocket, ChatWindow correspondingChatWindow) {
+        this.returnSocket = returnSocket;
+        this.filename_label = correspondingChatWindow.getFilenameLabel();
+        this.chatWindow = correspondingChatWindow;
     }
     
     public String getFileExtension(File file){
@@ -59,13 +58,13 @@ public class ReceiveThread extends Thread{
         
         while (true) {
                 try {
-                    Socket socket = serverSocket.accept();
                     
-                    ObjectInputStream onIn = new ObjectInputStream(socket.getInputStream());
+                    
+                    ObjectInputStream onIn = new ObjectInputStream(returnSocket.getInputStream());
                     
                     try {
                         File file = (File) onIn.readObject();
-                        filename_label.setText("Receiving");
+                        filename_label.setText("Receiving...");
                         
                         if (file != null) {
                             FileDialog saveFileDialog = new FileDialog(chatWindow);
@@ -100,7 +99,7 @@ public class ReceiveThread extends Thread{
                     System.out.println("Error when accept");
                 }
 
-            
+            break;
 
         }
         

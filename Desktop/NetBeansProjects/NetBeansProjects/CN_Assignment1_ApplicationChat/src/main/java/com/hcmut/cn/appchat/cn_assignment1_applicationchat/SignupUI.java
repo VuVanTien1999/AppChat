@@ -20,6 +20,7 @@ public class SignupUI extends javax.swing.JFrame {
     
     public SignupUI() {
         initComponents();
+        this.setVisible(true);
     }
 
     @SuppressWarnings("unchecked")
