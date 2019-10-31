@@ -91,14 +91,16 @@ public class UserThread extends Thread {
                     fromServer.writeUTF(temp.getHost());
                     fromServer.writeUTF(String.valueOf(temp.getPort()));
                 }
-
-                try {
-                    Thread.sleep(20 * 1000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
             }
         } catch (IOException ex) {
+            AccountProfile offlineUser = this.server.getUserList().stream()
+                    .filter(user -> user.getUsername().equals(this.usernameThread))
+                    .findAny()
+                    .orElse(null);
+            offlineUser.setActiveStatus(false);
+            offlineUser.setHost("None");
+            offlineUser.setPort(0);
+            
             System.out.println("Error in UserThread: " + ex.getMessage());
             ex.printStackTrace();
         }
