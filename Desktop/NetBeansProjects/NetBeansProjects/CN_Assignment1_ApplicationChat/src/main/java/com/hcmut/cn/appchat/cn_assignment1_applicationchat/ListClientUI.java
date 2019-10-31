@@ -31,6 +31,9 @@ public class ListClientUI extends javax.swing.JFrame {
     private Socket socket;
     private static ChatClient chatClient;
     private ServerSocket serverSocket;
+    private List<ClientInfo> connectedList;
+    private ServerSocketThread serverSocketThread;
+    
     /**
      * Creates new form ListClientUI
      */
@@ -71,10 +74,12 @@ public class ListClientUI extends javax.swing.JFrame {
                                 
         try {
             serverSocket = new ServerSocket(chatClient.getMyPort());
-            ServerSocketThread serverSocketThread = new ServerSocketThread(serverSocket);
+            serverSocketThread = new ServerSocketThread(serverSocket);
+            serverSocketThread.setConnectedList(connectedList);
             serverSocketThread.start();
         } catch (IOException ex) {
             Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error when creating ServerSocket");
             ex.printStackTrace();
         }
     }
@@ -155,13 +160,26 @@ public class ListClientUI extends javax.swing.JFrame {
         if (onlineUserList.getSelectedIndex() != -1) {
             ClientInfo otherInfo = this.listClient.get(onlineUserList.getSelectedIndex());
             
+            //this.connectedList = serverSocketThread.getConnectedList();
+            List<ClientInfo> list = new ArrayList<>(serverSocketThread.getConnectedList());
+            System.out.println("---------------126---");
+            System.out.println(this.connectedList.addAll(list));
+                        
+            if (this.isContainInList(otherInfo)) {                
+                return;
+            }
+            
+            connectedList.add(otherInfo);
+            serverSocketThread.setConnectedList(connectedList);
+            connectedList.clear();
+            
             try {
                 Socket socketToOther = new Socket(otherInfo.getHost(), otherInfo.getPort());
 
                 ChatWindowThread chatWindowThread = new ChatWindowThread(
                         this.serverSocket,
                         socketToOther,
-                        socketToOther
+                        otherInfo
                 );
                                 
                 chatWindowThread.start();
@@ -240,4 +258,62 @@ public class ListClientUI extends javax.swing.JFrame {
     private javax.swing.JList<String> onlineUserList;
     private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
+
+    public void listen(int port) {
+        ServerSocketThread serverSocketThread;
+        ServerSocket serverSocket;
+        
+        try {
+            serverSocket = new ServerSocket(port);
+            serverSocketThread = new ServerSocketThread(serverSocket);
+            serverSocketThread.start();
+
+            Socket socketReturn;
+            while (true) {
+                if (serverSocketThread.getSocket() != null) {
+                    socketReturn = serverSocketThread.getSocket();
+                    serverSocketThread.setNULL();
+                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
+                    
+                    
+                }
+            }
+            
+            
+            
+
+        } catch (IOException ex) {
+            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+    
+    private boolean isContainInList(ClientInfo otherInfo) {
+        boolean isContain = false;
+        for (int i = 0; i < connectedList.size(); i++) {
+            if (connectedList.get(i).getHost().equals(otherInfo.getHost())
+                    && connectedList.get(i).getPort() == otherInfo.getPort()) {
+
+                System.out.println("Receive request from: " + otherInfo.getPort());
+                isContain = true;
+
+//                        ChatWindow correspondingChatWindow = this.getChatClient(i);
+//                        if (correspondingChatWindow != null) {
+//                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
+//                            receiveThread.start();
+//                        }
+                break;
+            }
+            System.out.println(connectedList.get(i).getHost() + "|241|" + connectedList.get(i).getPort());
+        }
+        
+        // print array
+        for (int i=0; i<connectedList.size(); i++) {
+            System.out.println(connectedList.get(i).getPort());
+        }
+        System.out.println("other port: " + otherInfo.getPort());
+
+        return isContain;
+    }
 }

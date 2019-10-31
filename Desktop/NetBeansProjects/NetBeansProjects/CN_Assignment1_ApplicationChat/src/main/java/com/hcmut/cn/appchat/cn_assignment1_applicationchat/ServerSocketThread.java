@@ -21,27 +21,36 @@ public class ServerSocketThread extends Thread{
     private ServerSocket serverSocket;
     private Socket returnSocket;
     private List<ClientInfo> connectedList;
+    private List<ChatWindow> chatWindowList;
     
     public ServerSocketThread(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
         connectedList = new ArrayList<ClientInfo>();
+        chatWindowList = new ArrayList<ChatWindow>();
     }
     
     public void run() {
-        System.out.println("Enter run");
         while (true) {
             try {
                 returnSocket = serverSocket.accept();
                 System.out.println("ServerSocket accept");
                 ClientInfo otherInfo = new ClientInfo(returnSocket.getInetAddress().getHostAddress(), returnSocket.getLocalPort());
+                System.out.println("Create other socket: " + otherInfo.getHost() + "|" + otherInfo.getPort());
                 
                 boolean isContain = false;
                 for (int i = 0; i < connectedList.size(); i++) {
                     if (connectedList.get(i).getHost().equals(otherInfo.getHost()) 
                             && connectedList.get(i).getPort() == otherInfo.getPort()) {
                         
-                        System.out.println("Receive request" + otherInfo.getPort());
+                        System.out.println("Receive request from: " + otherInfo.getPort());
                         isContain = true;
+                        
+                        ChatWindow correspondingChatWindow = this.getChatClient(i);
+                        if (correspondingChatWindow != null) {
+                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
+                            receiveThread.start();
+                        }
+                        
                         
                         break;
                     }
@@ -57,10 +66,10 @@ public class ServerSocketThread extends Thread{
                 ChatWindowThread chatWindowThread = new ChatWindowThread(
                         serverSocket,
                         returnSocket,
-                        new Socket(otherInfo.getHost(), otherInfo.getPort())
+                        otherInfo
                 );
-                System.out.println("ChatWindowThread pass");
                 chatWindowThread.start();
+                chatWindowList.add(chatWindowThread.getChatWindow());
 
             } catch (IOException ex) {
                 Logger.getLogger(ServerSocketThread.class.getName()).log(Level.SEVERE, null, ex);
@@ -77,5 +86,19 @@ public class ServerSocketThread extends Thread{
     
     public void setNULL() {
         this.returnSocket = null;
+    }
+    private ChatWindow getChatClient(int i) {
+        if (i+1 > chatWindowList.size()) {
+            return null;
+        }
+        else return chatWindowList.get(i);
+    }
+
+    public void setConnectedList(List<ClientInfo> connectedList) {
+        this.connectedList = connectedList;
+    }
+    
+    public List<ClientInfo> getConnectedList() {
+        return this.connectedList;
     }
 }

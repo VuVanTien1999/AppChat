@@ -53,8 +53,8 @@ public class ChatWindow extends javax.swing.JFrame {
     public ChatWindow(ServerSocket serverSocket, Socket socket) {
         this(socket);
         this.serverSocket = serverSocket;
-        receiveThread = new ReceiveThread(serverSocket, this);
-        receiveThread.start();
+//        receiveThread = new ReceiveThread(serverSocket, this);
+//        receiveThread.start();
     }
 
     public ChatWindow(ServerSocket serverSocket, Socket socketMessage, Socket socketSendFile) {
@@ -63,6 +63,11 @@ public class ChatWindow extends javax.swing.JFrame {
         this.socketSendFile = socketSendFile;
         
         otherInfo = new ClientInfo(socketSendFile.getInetAddress().getHostAddress(), socketSendFile.getPort());
+    }
+
+    ChatWindow(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo) {
+        this(serverSocket, socketMessage);
+        this.otherInfo = otherInfo;
     }
 
     /**
