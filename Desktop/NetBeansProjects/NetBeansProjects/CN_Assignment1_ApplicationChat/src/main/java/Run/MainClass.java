@@ -26,27 +26,6 @@ public class MainClass {
         LoginUI login = new LoginUI(chatClient);
         login.execute();
         
-        List<ClientInfo> listAccount = new ArrayList<ClientInfo>();
-        listAccount = chatClient.getClientList();
-        
-        // logInUI.start() 
-        
-//        List<ClientInfo> list = new ArrayList<ClientInfo>();
-//        ClientInfo clientRequest = new ClientInfo("localhohst", 5001);
-//        ClientInfo clientTemp = new ClientInfo("localhohst", 5002);
-//        list.add(clientRequest);
-//        list.add(clientTemp);
-//        
-//        ListClientUI listClientUI = new ListClientUI(chatClient, list);
-//        listClientUI.listen(thisClient.getPort()); // accept
-        
-        
-        
-        
-        // chatWindow.start()
-        
-        // listClientUI.listen()
-        
-        
+        ListClientUI listClientUI = new ListClientUI(chatClient);
     }
 }

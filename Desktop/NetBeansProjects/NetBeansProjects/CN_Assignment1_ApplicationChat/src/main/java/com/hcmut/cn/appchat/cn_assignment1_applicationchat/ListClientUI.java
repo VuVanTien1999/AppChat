@@ -15,73 +15,68 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ChatWindow;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.DefaultListModel;
+import javax.swing.ListModel;
+import javax.swing.Timer;
 /**
  *
  * @author nguye
  */
 public class ListClientUI extends javax.swing.JFrame {
-    private static List<ClientInfo> listClient;
+    private List<ClientInfo> listClient;
     private Socket socket;
-    private ChatClient chatClient;
+    private static ChatClient chatClient;
     private ServerSocket serverSocket;
     /**
      * Creates new form ListClientUI
      */
-    public ListClientUI(List<ClientInfo> listClient) {
+    public ListClientUI(ChatClient chatClient) {
         initComponents();
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width/2 - this.getSize().width/2, dim.height/2 - this.getSize().height/2);
         this.setVisible(true);
-        this.listClient = listClient;
-    }
-
-    public ListClientUI(ChatClient chatClient, List<ClientInfo> list) {
-        this(list);
-        DefaultListModel model = new DefaultListModel();
-        
-        for (int i = 0; i < list.size(); i++) {
-            model.addElement(list.get(i).getPort());
-        }
-        
-        this.activeUserList.setModel(model);
-        
         this.chatClient = chatClient;
+        this.listClient = this.chatClient.getClientList();
         
-        //  
-        //ServerSocket serverSocket;
+        offlineUserList.setEnabled(false);
+        
+        DefaultListModel modelForOnlineUsers = new DefaultListModel();
+        DefaultListModel modelForOfflineUsers = new DefaultListModel();
+                        
+        onlineUserList.setModel(modelForOnlineUsers);
+        offlineUserList.setModel(modelForOfflineUsers);
+        
+        Timer refreshList = new Timer(10000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) { 
+                modelForOnlineUsers.removeAllElements();
+                modelForOfflineUsers.removeAllElements();
+                
+                List<ClientInfo> listC = chatClient.getClientList();
+                
+                for (int i = 0; i < listC.size(); i++) {
+                    boolean userStatus = listC.get(i).getActiveStatus();
+                    if (userStatus) {
+                        modelForOnlineUsers.addElement(listC.get(i).getDisplayedName() + "(" + listC.get(i).getUsername() + ")");
+                    }
+                    else modelForOfflineUsers.addElement(listC.get(i).getDisplayedName() + "(" + listC.get(i).getUsername() + ")");
+                }               
+            }
+        });
+        refreshList.start();
+                                
         try {
             serverSocket = new ServerSocket(chatClient.getMyPort());
             ServerSocketThread serverSocketThread = new ServerSocketThread(serverSocket);
             serverSocketThread.start();
-            
-            
-//            while (true) {
-//                Socket socket;
-//                if (serverSocketThread.getSocket() != null) {
-//                    System.out.println("Accept socket");
-//                    socket = serverSocketThread.getSocket();
-//                    serverSocketThread.setNULL();
-//                    
-//                    ClientInfo otherInfo = new ClientInfo(socket.getInetAddress().getHostAddress(), socket.getPort());
-//                    
-//                    ChatWindowThread chatWindowThread = new ChatWindowThread(
-//                            serverSocket,
-//                            socket,
-//                            new Socket(otherInfo.getIP(), otherInfo.getPort())
-//                    );
-//                    chatWindowThread.start();
-//                    
-//                }
-//                
-//                               
-//            }
-            
-            
-            
         } catch (IOException ex) {
             Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
-        
     }
 
     /**
@@ -94,50 +89,71 @@ public class ListClientUI extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        activeUserList = new javax.swing.JList<>();
+        onlineUserList = new javax.swing.JList<>();
+        onlineUsersLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        offlineUserList = new javax.swing.JList<>();
+        offlineUsersLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        activeUserList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        activeUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        activeUserList.setVisibleRowCount(-1);
-        activeUserList.addMouseListener(new java.awt.event.MouseAdapter() {
+        onlineUserList.setFont(new java.awt.Font("Tahoma", 0, 15)); // NOI18N
+        onlineUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        onlineUserList.setVisibleRowCount(-1);
+        onlineUserList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                activeUserListMouseClicked(evt);
+                onlineUserListMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(activeUserList);
+        jScrollPane1.setViewportView(onlineUserList);
+
+        onlineUsersLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        onlineUsersLabel.setText("Let chat to people down here");
+        onlineUsersLabel.setPreferredSize(new java.awt.Dimension(160, 40));
+
+        offlineUserList.setFont(new java.awt.Font("Tahoma", 0, 15)); // NOI18N
+        offlineUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        jScrollPane2.setViewportView(offlineUserList);
+
+        offlineUsersLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        offlineUsersLabel.setText("Oops, people down here are not available");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(225, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1)
+                    .addComponent(onlineUsersLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(76, 76, 76)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2)
+                    .addComponent(offlineUsersLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(onlineUsersLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(offlineUsersLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
+                .addGap(12, 12, 12))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void activeUserListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_activeUserListMouseClicked
+    private void onlineUserListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onlineUserListMouseClicked
         // TODO add your handling code here:
-        
-        if (activeUserList.getSelectedIndex() != -1) {
-            System.out.println("Click: " + activeUserList.getSelectedIndex());
-            ClientInfo otherInfo = listClient.get(activeUserList.getSelectedIndex());
+        if (onlineUserList.getSelectedIndex() != -1) {
+            ClientInfo otherInfo = this.listClient.get(onlineUserList.getSelectedIndex());
             
             try {
                 Socket socketToOther = new Socket(otherInfo.getHost(), otherInfo.getPort());
@@ -147,19 +163,40 @@ public class ListClientUI extends javax.swing.JFrame {
                         socketToOther,
                         socketToOther
                 );
-                System.out.println("Socket send");
+                                
                 chatWindowThread.start();
-
             } catch (IOException ex) {
                 Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
                 ex.printStackTrace();
             }
-            
         }
         
-        activeUserList.clearSelection();
-    }//GEN-LAST:event_activeUserListMouseClicked
+        onlineUserList.clearSelection();
+    }//GEN-LAST:event_onlineUserListMouseClicked
 
+    public void listen(int port) {
+        ServerSocket serverSocket;
+        ServerSocketThread serverSocketThread;
+        
+        try {
+            serverSocket = new ServerSocket(port);
+            serverSocketThread = new ServerSocketThread(serverSocket);
+            serverSocketThread.start();
+
+            Socket socketReturn;
+            
+            while (true) {
+                if (serverSocketThread.getSocket() != null) {
+                    socketReturn = serverSocketThread.getSocket();
+                    serverSocketThread.setNULL();
+                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());                    
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -190,43 +227,17 @@ public class ListClientUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ListClientUI(listClient).setVisible(true);
+                new ListClientUI(chatClient).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList<String> activeUserList;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JList<String> offlineUserList;
+    private javax.swing.JLabel offlineUsersLabel;
+    private javax.swing.JList<String> onlineUserList;
+    private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
-
-    public void listen(int port) {
-        ServerSocketThread serverSocketThread;
-        ServerSocket serverSocket;
-        
-        try {
-            serverSocket = new ServerSocket(port);
-            serverSocketThread = new ServerSocketThread(serverSocket);
-            serverSocketThread.start();
-
-            Socket socketReturn;
-            while (true) {
-                if (serverSocketThread.getSocket() != null) {
-                    socketReturn = serverSocketThread.getSocket();
-                    serverSocketThread.setNULL();
-                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
-                    
-                    
-                }
-            }
-            
-            
-            
-
-        } catch (IOException ex) {
-            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
-    }
 }

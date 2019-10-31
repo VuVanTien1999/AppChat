@@ -20,7 +20,6 @@ public class LoginUI {
     }
     
     public void execute() {
-        signin.setVisible(true);
         while(true) {
             synchronized(this.signin) {
                 try {

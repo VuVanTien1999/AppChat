@@ -19,18 +19,21 @@ import java.util.*;
  * @author nguye
  */
 public class ChatClient {
-    private ClientInfo serverInfo;
-    private ClientInfo myInfo;
+    private ClientInfo myInfo, serverInfo;
     private ServerSocket myServerSocket;
-    private Socket mySocket;
-    private String accountInfo;
+    
     private DataInputStream toClient;
     private DataOutputStream fromClient;
+    
     private List<ClientInfo> listClient = new ArrayList<ClientInfo>();
         
     public ChatClient(ClientInfo _serverInfo, ClientInfo _myInfo) {
         serverInfo = _serverInfo;
         myInfo = _myInfo;
+    }
+
+    public int getMyPort() {
+        return this.myInfo.getPort();
     }
     
     public void setUpConnectionToServer() {
@@ -56,8 +59,6 @@ public class ChatClient {
         String response = "";
 
         try {
-            System.out.print(username + " " + new String(password));
-
             fromClient.writeUTF("Verify account");
             fromClient.writeUTF(username);
             fromClient.writeUTF(new String(password));
@@ -65,7 +66,6 @@ public class ChatClient {
             fromClient.writeUTF(String.valueOf(this.myInfo.getPort()));
                        
             response = toClient.readUTF();
-            System.out.print(response);            
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
@@ -79,16 +79,12 @@ public class ChatClient {
         String response = "";
         
         try {
-            System.out.print(username + " " + new String(password) + " " + displayedName);
-
             fromClient.writeUTF("Create account");
             fromClient.writeUTF(username);
             fromClient.writeUTF(new String(password));
             fromClient.writeUTF(displayedName);
            
             response = toClient.readUTF();
-            
-            System.out.print(response);
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
@@ -99,21 +95,28 @@ public class ChatClient {
     }
     
     public List<ClientInfo> getClientList() {
-        return this.listClient;        
-    }
-            
-    public void refreshClientList() {
-        GetClientListThread getClientListThread = new GetClientListThread(this.fromClient, this.toClient);
-            
-        getClientListThread.start();
+        try {         
+            this.fromClient.writeUTF("Get list of users");
+
+            int numOfClient = Integer.valueOf(this.toClient.readUTF());
+            String clientUsername, clientDisplayedname, clientHost;
+            boolean clientActiveStatus;
+            int clientPort;
+
+            for (int i = 0; i < numOfClient - 1; i++) {
+                clientUsername = this.toClient.readUTF();
+                clientDisplayedname = this.toClient.readUTF();
+                clientActiveStatus = Boolean.valueOf(this.toClient.readUTF());
+                clientHost = this.toClient.readUTF();
+                clientPort = Integer.valueOf(this.toClient.readUTF());
                 
-        synchronized(getClientListThread) {
-            this.listClient = getClientListThread.getClientList();
+                this.listClient.add(new ClientInfo(clientUsername, clientDisplayedname, clientActiveStatus, clientHost, clientPort));
             }
-        
-        synchronized(this) {
-            notify();
+        } catch (IOException ex) {
+            System.out.println("Error writing to server: " + ex.getMessage());
+            ex.printStackTrace();
         }
+        return this.listClient;        
     }
     
     public Socket accept() {
@@ -122,8 +125,7 @@ public class ChatClient {
             Socket tempSocket = myServerSocket.accept();
             
             myServerSocket.close();
-            
-            
+                       
             return tempSocket;
             
         } catch (IOException ex) {
@@ -141,10 +143,10 @@ public class ChatClient {
             
             return null;
         }
-
     }
     
     public Socket connectSocket(ClientInfo otherClient) {
+        Socket mySocket = null;
         try {
             mySocket = new Socket(otherClient.getHost(), otherClient.getPort());
         } catch (IOException ex) {
@@ -155,16 +157,4 @@ public class ChatClient {
     }
     
     public static void main(String[] args) {}
-
-    public String getMyHost() {
-        return this.myInfo.getHost();
-    }
-    
-    public int getMyPort() {
-        return this.myInfo.getPort();
-    }
-
-    ClientInfo getClientInfo() {
-        return myInfo;
-    }
 }
