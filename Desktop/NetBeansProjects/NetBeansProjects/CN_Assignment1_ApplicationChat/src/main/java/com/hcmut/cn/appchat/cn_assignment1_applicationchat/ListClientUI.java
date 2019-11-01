@@ -5,7 +5,7 @@
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
-
+import java.util.*;
 import java.util.List;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ServerSocketThread;
 import java.io.IOException;
@@ -39,9 +39,11 @@ public class ListClientUI extends javax.swing.JFrame {
      */
     public ListClientUI(ChatClient chatClient) {
         initComponents();
+        
+        this.setVisible(true);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2 - this.getSize().width/2, dim.height/2 - this.getSize().height/2);
-        this.setVisible(true);
+        
         this.chatClient = chatClient;
         this.listClient = this.chatClient.getClientList();
         
@@ -53,20 +55,20 @@ public class ListClientUI extends javax.swing.JFrame {
         onlineUserList.setModel(modelForOnlineUsers);
         offlineUserList.setModel(modelForOfflineUsers);
         
-        Timer refreshList = new Timer(10000, new ActionListener() {
+        Timer refreshList = new Timer(2000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) { 
                 modelForOnlineUsers.removeAllElements();
                 modelForOfflineUsers.removeAllElements();
                 
-                List<ClientInfo> listC = chatClient.getClientList();
+                List<ClientInfo> listFriends = chatClient.getClientList();
                 
-                for (int i = 0; i < listC.size(); i++) {
-                    boolean userStatus = listC.get(i).getActiveStatus();
+                for (int i = 0; i < listFriends.size(); i++) {
+                    boolean userStatus = listFriends.get(i).getActiveStatus();
                     if (userStatus) {
-                        modelForOnlineUsers.addElement(listC.get(i).getDisplayedName() + "(" + listC.get(i).getUsername() + ")");
+                        modelForOnlineUsers.addElement(listFriends.get(i).getDisplayedName() + "(" + listFriends.get(i).getUsername() + ")");
                     }
-                    else modelForOfflineUsers.addElement(listC.get(i).getDisplayedName() + "(" + listC.get(i).getUsername() + ")");
+                    else modelForOfflineUsers.addElement(listFriends.get(i).getDisplayedName() + "(" + listFriends.get(i).getUsername() + ")");
                 }               
             }
         });
@@ -259,35 +261,35 @@ public class ListClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
 
-    public void listen(int port) {
-        ServerSocketThread serverSocketThread;
-        ServerSocket serverSocket;
-        
-        try {
-            serverSocket = new ServerSocket(port);
-            serverSocketThread = new ServerSocketThread(serverSocket);
-            serverSocketThread.start();
-
-            Socket socketReturn;
-            while (true) {
-                if (serverSocketThread.getSocket() != null) {
-                    socketReturn = serverSocketThread.getSocket();
-                    serverSocketThread.setNULL();
-                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
-                    
-                    
-                }
-            }
-            
-            
-            
-
-        } catch (IOException ex) {
-            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
-    }
+//    public void listen(int port) {
+//        ServerSocketThread serverSocketThread;
+//        ServerSocket serverSocket;
+//        
+//        try {
+//            serverSocket = new ServerSocket(port);
+//            serverSocketThread = new ServerSocketThread(serverSocket);
+//            serverSocketThread.start();
+//
+//            Socket socketReturn;
+//            while (true) {
+//                if (serverSocketThread.getSocket() != null) {
+//                    socketReturn = serverSocketThread.getSocket();
+//                    serverSocketThread.setNULL();
+//                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
+//                    
+//                    
+//                }
+//            }
+//            
+//            
+//            
+//
+//        } catch (IOException ex) {
+//            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        
+//        
+//    }
     
     private boolean isContainInList(ClientInfo otherInfo) {
         boolean isContain = false;

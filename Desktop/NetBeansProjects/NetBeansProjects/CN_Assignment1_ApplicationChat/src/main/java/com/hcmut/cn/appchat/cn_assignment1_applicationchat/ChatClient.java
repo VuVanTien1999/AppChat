@@ -24,9 +24,7 @@ public class ChatClient {
     
     private DataInputStream toClient;
     private DataOutputStream fromClient;
-    
-    private List<ClientInfo> listClient = new ArrayList<ClientInfo>();
-        
+            
     public ChatClient(ClientInfo _serverInfo, ClientInfo _myInfo) {
         serverInfo = _serverInfo;
         myInfo = _myInfo;
@@ -95,28 +93,32 @@ public class ChatClient {
     }
     
     public List<ClientInfo> getClientList() {
+        List<ClientInfo> listFriendsInfo = new ArrayList<ClientInfo>();
+        
         try {         
             this.fromClient.writeUTF("Get list of users");
 
-            int numOfClient = Integer.valueOf(this.toClient.readUTF());
-            String clientUsername, clientDisplayedname, clientHost;
-            boolean clientActiveStatus;
-            int clientPort;
+            int numOfFriend = Integer.valueOf(this.toClient.readUTF());
+            
+            String friendUsername, friendDisplayedname;
+            boolean friendActiveStatus;
+            String friendHost;
+            int friendtPort;
 
-            for (int i = 0; i < numOfClient - 1; i++) {
-                clientUsername = this.toClient.readUTF();
-                clientDisplayedname = this.toClient.readUTF();
-                clientActiveStatus = Boolean.valueOf(this.toClient.readUTF());
-                clientHost = this.toClient.readUTF();
-                clientPort = Integer.valueOf(this.toClient.readUTF());
+            for (int i = 0; i < numOfFriend; i++) {
+                friendUsername = this.toClient.readUTF();
+                friendDisplayedname = this.toClient.readUTF();
+                friendActiveStatus = Boolean.valueOf(this.toClient.readUTF());
+                friendHost = this.toClient.readUTF();
+                friendtPort = Integer.valueOf(this.toClient.readUTF());
                 
-                this.listClient.add(new ClientInfo(clientUsername, clientDisplayedname, clientActiveStatus, clientHost, clientPort));
+                listFriendsInfo.add(new ClientInfo(friendUsername, friendDisplayedname, friendActiveStatus, friendHost, friendtPort));
             }
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
         }
-        return this.listClient;        
+        return listFriendsInfo;        
     }
     
     public Socket accept() {
