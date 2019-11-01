@@ -6,6 +6,8 @@
 
 package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 
+import java.util.*;
+
 /**
  *
  * @author Viet Hoang Nguyen
@@ -13,17 +15,22 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
  */
 
 public class AccountProfile {
-    private String username, password, displayedName;    
-    private boolean activeStatus;
-    
+    private String username, password, displayedName; 
+    private int numOfFriend = 0;
+    private boolean activeStatus = false;
+    private List<String> friends = new ArrayList<>();
     private String host = "None";
     private int port = 0;
-    
-    public AccountProfile(String username, String password, String displayedName) {
+        
+    public AccountProfile(String username, String password, String displayedName, int numOfFriend, String[] friends) {
         this.username = username;
         this.password = password;
         this.displayedName = displayedName;
-        this.activeStatus = false;
+        this.numOfFriend = numOfFriend;
+        
+        for (int i = 0; i < numOfFriend; i++) {
+            this.friends.add(friends[i]);
+        }
     }
 
     public boolean isAccountExisted(String username) {
@@ -44,6 +51,20 @@ public class AccountProfile {
     
     public boolean getActiveStatus() {
         return this.activeStatus;
+    }
+    
+    public int getNumOfFriend() {
+        return this.numOfFriend;
+    }
+    
+    public String[] getFriendUsername() {
+        String[] result = new String[this.numOfFriend];
+        
+        for(int i = 0; i < this.numOfFriend; i++) {
+            result[i] = this.friends.get(i);
+        }
+        
+        return result;
     }
     
     public String getHost() {

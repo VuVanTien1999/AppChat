@@ -76,20 +76,40 @@ public class UserThread extends Thread {
                 }
             } while(true);
             
+            List<AccountProfile> tempList = this.server.getUserList();
+            for (int i = 0; i < tempList.size(); i++) {
+                System.out.println(tempList.get(i).getUsername());
+                System.out.println(String.valueOf(tempList.get(i).getActiveStatus()));
+            }
+            
             List<AccountProfile> userList;
             while(true) {
-                userList = this.server.getUserList();
-                fromServer.writeUTF(String.valueOf(userList.size()));    
+                if (toServer.readUTF().equals(("Get list of users"))) {
+                    userList = this.server.getUserList();
 
-                for (int i = 0 ; i < userList.size(); i++) {
-                    AccountProfile temp = userList.get(i);
+                    AccountProfile myInfo = userList.stream()
+                            .filter(user -> user.getUsername().equals(this.usernameThread))
+                            .findAny()
+                            .orElse(null);
 
-                    if (temp.getUsername().equals(this.usernameThread)) continue;
-                    fromServer.writeUTF(temp.getUsername());
-                    fromServer.writeUTF(temp.getDisplayedName());
-                    fromServer.writeUTF(String.valueOf(temp.getActiveStatus()));
-                    fromServer.writeUTF(temp.getHost());
-                    fromServer.writeUTF(String.valueOf(temp.getPort()));
+                    fromServer.writeUTF(String.valueOf(myInfo.getNumOfFriend()));    
+
+                    String[] listFriendsUsername = myInfo.getFriendUsername();    
+
+                    for (int i = 0; i < myInfo.getNumOfFriend(); i++) {
+                        String friendUsername = listFriendsUsername[i];
+
+                        AccountProfile temp = userList.stream()
+                                .filter(user -> user.getUsername().equals(friendUsername))
+                                .findAny()
+                                .orElse(null);
+
+                        fromServer.writeUTF(temp.getUsername());
+                        fromServer.writeUTF(temp.getDisplayedName());
+                        fromServer.writeUTF(String.valueOf(temp.getActiveStatus()));
+                        fromServer.writeUTF(temp.getHost());
+                        fromServer.writeUTF(String.valueOf(temp.getPort()));
+                    } 
                 }
             }
         } catch (IOException ex) {

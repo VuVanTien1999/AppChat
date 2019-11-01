@@ -7,6 +7,8 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -19,7 +21,7 @@ public class ChatServer {
     public final static int PORT = 9000;
     
     private List<AccountProfile> userList = new ArrayList<AccountProfile>();
-    private Set<UserThread> userThreads = new HashSet<>();
+    private List<UserThread> userThreads = new ArrayList<UserThread>();
  
     public ChatServer() {}
     
@@ -27,15 +29,12 @@ public class ChatServer {
         this.userList = this.readFromAccountList();
         
         try (ServerSocket serverSocket = new ServerSocket(this.PORT)) {
- 
-            System.out.println("Chat Server is listening on port " + this.PORT);
- 
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("New user connected");
-                              
+                
                 UserThread newUser = new UserThread(this, socket);
                 userThreads.add(newUser);
+                
                 newUser.start();
             }
         } catch (IOException ex) {
@@ -45,8 +44,12 @@ public class ChatServer {
     }
     
     private List<AccountProfile> readFromAccountList() {
+        // File contains info of all accounts which are signed up through server
+        // Each account info is stored in file by two lines
+        // First line is all about account info: "username" "," "password" "," displayed name" "," "number of friend"
+        // Second line is the list of friends: "username of friend 1" "," "username of friend 2" "," ...
         String fileName = "AccountList.txt";
-        String line = null;
+        String accountLine = null, friendsLine = null;
 
         List<AccountProfile> userList = new ArrayList<AccountProfile>();
         
@@ -54,12 +57,17 @@ public class ChatServer {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             
-            line = bufferedReader.readLine();
+            // First two lines of file is the header
+            accountLine = bufferedReader.readLine();
+            friendsLine = bufferedReader.readLine();
             
-            while((line = bufferedReader.readLine()) != null) {                
-                String[] parts = line.split(",", 3);
+            while((accountLine = bufferedReader.readLine()) != null) {             
+                String[] parts = accountLine.split(",", 4);
                 
-                userList.add(new AccountProfile(parts[0], parts[1], parts[2]));
+                friendsLine = bufferedReader.readLine();   
+                String[] friends = friendsLine.split(",", Integer.valueOf(parts[3])); // parts[3] is the number of friend
+                
+                userList.add(new AccountProfile(parts[0], parts[1], parts[2], Integer.valueOf(parts[3]), friends));
             }   
 
             bufferedReader.close();  
@@ -83,7 +91,8 @@ public class ChatServer {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                                     
             bufferedWriter.newLine();
-            bufferedWriter.write(username + "," + password + "," + displayedName);
+            bufferedWriter.write(username + "," + password + "," + displayedName + "," + "0");
+            bufferedWriter.newLine();
 
             bufferedWriter.close();
             fileWriter.close();
@@ -94,6 +103,26 @@ public class ChatServer {
         catch(IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void writeToAccountList(String username, String newFriendUsername) {
+        File fileName = new File("Accountlist.txt");
+        
+        try {
+            List<String> fileContent = new ArrayList<>(Files.readAllLines(fileName.toPath(), StandardCharsets.UTF_8));
+        
+            for (int i = 0; i < fileContent.size(); i += 2) {
+                String parts[] = fileContent.get(i).split(",", 2);
+                if (parts[0].equals(username)) {
+                    String friendUpdate = String.join(",", fileContent.get(i + 1), newFriendUsername);
+                    fileContent.set(i + 1, friendUpdate);               
+                }
+            }
+            
+            Files.write(fileName.toPath(), fileContent, StandardCharsets.UTF_8);
+        } catch(IOException ex) {
+            ex.printStackTrace();
+        }    
     }
         
     private void refreshAccountList() {
@@ -115,11 +144,12 @@ public class ChatServer {
     }
     
     public boolean isAccountValid(String username, String password, String host, int port) {
+        System.out.println(username + password);
         AccountProfile validAccount = this.userList.stream()
                     .filter(user -> user.isAccountValid(username, password))
                     .findAny()
                     .orElse(null);
-        
+        System.out.println(username + password);
         if (validAccount != null) {
             validAccount.setActiveStatus(true);
             validAccount.setHost(host);
