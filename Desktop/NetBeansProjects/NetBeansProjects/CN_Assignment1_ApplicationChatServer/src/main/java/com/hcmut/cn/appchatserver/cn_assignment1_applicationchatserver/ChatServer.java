@@ -106,7 +106,7 @@ public class ChatServer {
         }
     }
 
-    private void writeToAccountList(String username, String newFriendUsername) {
+    public void writeToAccountList(String username, String newFriendUsername) {
         File fileName = new File("Accountlist.txt");
         
         try {
@@ -128,6 +128,18 @@ public class ChatServer {
         
     private void refreshAccountList() {
         this.userList = this.readFromAccountList();
+    }
+    
+    public boolean isAccountExisted(String username) {
+        AccountProfile existedAccount = this.userList.stream()
+                .filter(user -> user.isAccountExisted(username))
+                .findAny()
+                .orElse(null);
+        
+        if (existedAccount == null) {
+            return false;
+        }
+        return true;
     }
     
     public boolean isAccountExisted(String username, String password, String displayedName) {

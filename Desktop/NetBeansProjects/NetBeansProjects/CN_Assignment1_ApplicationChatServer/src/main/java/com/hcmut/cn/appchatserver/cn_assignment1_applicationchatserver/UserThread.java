@@ -84,32 +84,81 @@ public class UserThread extends Thread {
             
             List<AccountProfile> userList;
             while(true) {
-                if (toServer.readUTF().equals(("Get list of users"))) {
-                    userList = this.server.getUserList();
-
-                    AccountProfile myInfo = userList.stream()
+                userList = this.server.getUserList();
+                
+                AccountProfile myProfile = userList.stream()
                             .filter(user -> user.getUsername().equals(this.usernameThread))
                             .findAny()
                             .orElse(null);
+                
+                if (toServer.readUTF().equals("Get list of users")) {
+                    //fromServer.writeUTF("Return list of users");
+                    
+                    // Return number of friend
+                    fromServer.writeUTF(String.valueOf(myProfile.getNumOfFriend()));    
 
-                    fromServer.writeUTF(String.valueOf(myInfo.getNumOfFriend()));    
-
-                    String[] listFriendsUsername = myInfo.getFriendUsername();    
-
-                    for (int i = 0; i < myInfo.getNumOfFriend(); i++) {
+                    String[] listFriendsUsername = myProfile.getFriendUsername();    
+                    for (int i = 0; i < myProfile.getNumOfFriend(); i++) {
                         String friendUsername = listFriendsUsername[i];
 
                         AccountProfile temp = userList.stream()
                                 .filter(user -> user.getUsername().equals(friendUsername))
                                 .findAny()
                                 .orElse(null);
-
+                        // Return friend's info (Username, Displayed name, Active status, Host, Port)
                         fromServer.writeUTF(temp.getUsername());
                         fromServer.writeUTF(temp.getDisplayedName());
                         fromServer.writeUTF(String.valueOf(temp.getActiveStatus()));
                         fromServer.writeUTF(temp.getHost());
                         fromServer.writeUTF(String.valueOf(temp.getPort()));
                     } 
+                }
+                else if (toServer.readUTF().equals("Get list of friend requests")) {
+                    fromServer.writeUTF("Return list of friend requests");
+                    
+                    // Return number of friend request
+                    fromServer.writeUTF(String.valueOf(myProfile.getNumOfFriendRequest()));    
+
+                    String[] listFriendRequestsUsername = myProfile.getFriendUsername();    
+                    for (int i = 0; i < myProfile.getNumOfFriendRequest(); i++) {
+                        // Return friend request's info (Username)
+                        fromServer.writeUTF(listFriendRequestsUsername[i]);
+                    }
+                }
+                else if (toServer.readUTF().equals("Send friend request")) {
+                    String friendRequestUsername = toServer.readUTF();
+                    
+                    if (this.server.isAccountExisted(friendRequestUsername)) {
+                        AccountProfile friendProfile = userList.stream()
+                           .filter(user -> user.getUsername().equals(friendRequestUsername))
+                           .findAny()
+                           .orElse(null);
+                        
+                        friendProfile.addNewFriendRequest(this.usernameThread);
+                    }
+                    else {
+                        fromServer.writeUTF("Username isn't existed");
+                    }
+                }
+                else if (toServer.readUTF().equals("Accept friend request")) {
+                    String friendRequestUsername = toServer.readUTF();
+                    
+                    myProfile.deleteFriendRequest(friendRequestUsername);
+                    myProfile.addNewFriend(friendRequestUsername);
+                    
+                    AccountProfile friendProfile = userList.stream()
+                           .filter(user -> user.getUsername().equals(friendRequestUsername))
+                           .findAny()
+                           .orElse(null);
+                    friendProfile.addNewFriend(this.usernameThread);
+                    
+                    this.server.writeToAccountList(this.usernameThread, friendRequestUsername);
+                    this.server.writeToAccountList(friendRequestUsername, this.usernameThread);
+                }
+                else if (toServer.readUTF().equals("Decline friend request")) {
+                    String friendSendingRequestUsername = toServer.readUTF();
+                    
+                    myProfile.deleteFriendRequest(friendSendingRequestUsername);
                 }
             }
         } catch (IOException ex) {

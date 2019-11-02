@@ -16,9 +16,10 @@ import java.util.*;
 
 public class AccountProfile {
     private String username, password, displayedName; 
-    private int numOfFriend = 0;
+    private int numOfFriend = 0, numOfFriendRequest = 0;
     private boolean activeStatus = false;
-    private List<String> friends = new ArrayList<>();
+    private List<String> friendList = new ArrayList<>();
+    private List<String> friendRequestList = new ArrayList<>();
     private String host = "None";
     private int port = 0;
         
@@ -29,7 +30,7 @@ public class AccountProfile {
         this.numOfFriend = numOfFriend;
         
         for (int i = 0; i < numOfFriend; i++) {
-            this.friends.add(friends[i]);
+            this.friendList.add(friends[i]);
         }
     }
 
@@ -57,11 +58,25 @@ public class AccountProfile {
         return this.numOfFriend;
     }
     
+    public int getNumOfFriendRequest() {
+        return this.numOfFriendRequest;
+    }
+    
     public String[] getFriendUsername() {
         String[] result = new String[this.numOfFriend];
         
         for(int i = 0; i < this.numOfFriend; i++) {
-            result[i] = this.friends.get(i);
+            result[i] = this.friendList.get(i);
+        }
+        
+        return result;
+    }
+    
+    public String[] getFriendReuqestUsername() {
+        String[] result = new String[this.numOfFriendRequest];
+        
+        for(int i = 0; i < this.numOfFriendRequest; i++) {
+            result[i] = this.friendRequestList.get(i);
         }
         
         return result;
@@ -77,6 +92,18 @@ public class AccountProfile {
     
     public void setActiveStatus(boolean status) {
         this.activeStatus = status;
+    }
+    
+    public void addNewFriend(String newFriendUsername) {
+        this.friendList.add(newFriendUsername);
+    }
+    
+    public void addNewFriendRequest(String newFriendUsername) {
+        this.friendRequestList.add(newFriendUsername);
+    }
+    
+    public void deleteFriendRequest(String friendUsername){
+        this.friendRequestList.remove(friendUsername);
     }
     
     public void setHost(String host) {
