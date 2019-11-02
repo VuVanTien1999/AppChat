@@ -90,8 +90,9 @@ public class ChatServer {
             FileWriter fileWriter = new FileWriter(fileName, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                                     
-            bufferedWriter.newLine();
             bufferedWriter.write(username + "," + password + "," + displayedName + "," + "0");
+            bufferedWriter.newLine();
+            bufferedWriter.write("");
             bufferedWriter.newLine();
 
             bufferedWriter.close();
