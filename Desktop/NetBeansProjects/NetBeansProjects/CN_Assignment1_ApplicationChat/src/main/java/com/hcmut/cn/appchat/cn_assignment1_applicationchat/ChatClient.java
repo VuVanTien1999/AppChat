@@ -34,6 +34,10 @@ public class ChatClient {
         return this.myInfo.getPort();
     }
     
+    public ClientInfo getMyInfo() {
+        return this.myInfo;
+    }
+    
     public void setUpConnectionToServer() {
         try {
             Socket socket = new Socket(this.serverInfo.getHost(), this.serverInfo.getPort());
@@ -69,7 +73,11 @@ public class ChatClient {
             ex.printStackTrace();
         }
         
-        if(response.equals("true")) return true;
+        if(response.equals("true")) { 
+            this.myInfo.setUsername(username);
+            
+            return true;
+        }
         else return false;
     }
     

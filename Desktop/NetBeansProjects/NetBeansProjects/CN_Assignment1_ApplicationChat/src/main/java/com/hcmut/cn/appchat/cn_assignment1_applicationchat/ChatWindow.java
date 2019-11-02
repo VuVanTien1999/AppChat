@@ -25,13 +25,12 @@ public class ChatWindow extends javax.swing.JFrame {
     
     private ReadClientThread client_read;
     private WriteClientThread client_write;
-    private String name;
     private File file;
     private ClientInfo otherInfo;
     private ReceiveThread receiveThread;
     private ServerSocket serverSocket;
     private Socket socketSendFile;
-    
+    private ClientInfo myInfo;
     
 
     public ChatWindow() {
@@ -68,6 +67,11 @@ public class ChatWindow extends javax.swing.JFrame {
     ChatWindow(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo) {
         this(serverSocket, socketMessage);
         this.otherInfo = otherInfo;
+    }
+
+    ChatWindow(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo, ClientInfo myInfo) {
+        this(serverSocket, socketMessage, otherInfo);
+        this.myInfo = myInfo;
     }
 
     /**
@@ -177,9 +181,9 @@ public class ChatWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
         String str;
         str = text_msg.getText().trim();
-        area_msg_disp.append(this.name + ": " + str + "\n");
+        area_msg_disp.append(this.myInfo.getDisplayedName() + ": " + str + "\n");
         
-        client_write.write(this.name + ": " + str);
+        client_write.write(this.myInfo.getDisplayedName() + ": " + str);
         text_msg.setText("");
     }//GEN-LAST:event_btn_sendActionPerformed
 
@@ -273,5 +277,9 @@ public class ChatWindow extends javax.swing.JFrame {
 
     JLabel getFilenameLabel() {
         return filename_label;
+    }
+    
+    public ClientInfo getMyInfo() {
+        return myInfo;
     }
 }

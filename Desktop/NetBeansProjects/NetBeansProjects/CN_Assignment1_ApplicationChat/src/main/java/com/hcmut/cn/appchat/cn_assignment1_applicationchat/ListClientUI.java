@@ -1,60 +1,86 @@
-/*
+/**
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
-import java.util.*;
-import java.util.List;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ServerSocketThread;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ClientInfo;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ChatWindow;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 import javax.swing.Timer;
+
 /**
  *
- * @author nguye
+ * @author Van Tien Vu & Huy Tran & Viet Hoang Nguyen
  */
 public class ListClientUI extends javax.swing.JFrame {
-    private List<ClientInfo> listClient;
-    private Socket socket;
     private static ChatClient chatClient;
+    private ClientInfo myInfo;
+    
     private ServerSocket serverSocket;
-    private List<ClientInfo> connectedList;
     private ServerSocketThread serverSocketThread;
     
+    private List<ClientInfo> listClient;
+    private List<ClientInfo> listConnectedClient;
+
     /**
      * Creates new form ListClientUI
      */
     public ListClientUI(ChatClient chatClient) {
+        // Initialize ListClientUI
         initComponents();
-        
         this.setVisible(true);
+        
+        // Get client list from ChatClient
+        this.chatClient = chatClient;
+        this.listClient = this.chatClient.getClientList();
+        this.listConnectedClient = new ArrayList<ClientInfo>();
+        this.myInfo = chatClient.getMyInfo();
+        
+        // Set ListClientUI to the center of the screen
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2 - this.getSize().width/2, dim.height/2 - this.getSize().height/2);
         
-        this.chatClient = chatClient;
-        this.listClient = this.chatClient.getClientList();
-        
+        // Set display mode of three lists in ListClientUI
+        onlineUserList.setEnabled(true);
         offlineUserList.setEnabled(false);
+        friendRequestList.setEnabled(true);
         
+        // Create ServerSocket for client to listen for other clients
+        try {
+            this.serverSocket = new ServerSocket(chatClient.getMyPort());
+        } catch (IOException ex) {
+            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error when creating ServerSocket");
+            ex.printStackTrace();
+        }
+        
+        // Pass ServerSocket & connected client list to another thread then start itself
+        this.serverSocketThread = new ServerSocketThread(this.serverSocket, listConnectedClient, listClient, myInfo);
+        this.serverSocketThread.start();
+
+        // Create models for three lists above
         DefaultListModel modelForOnlineUsers = new DefaultListModel();
         DefaultListModel modelForOfflineUsers = new DefaultListModel();
-                        
+        DefaultListModel modelForFriendRequests = new DefaultListModel();
+        
+        // Set models for these lists
         onlineUserList.setModel(modelForOnlineUsers);
         offlineUserList.setModel(modelForOfflineUsers);
+        friendRequestList.setModel(modelForFriendRequests);
         
+        // Create another thread for refreshing these lists
         Timer refreshList = new Timer(2000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) { 
@@ -73,15 +99,85 @@ public class ListClientUI extends javax.swing.JFrame {
             }
         });
         refreshList.start();
-                                
+    }
+
+    public void listen(int port) {
+        ServerSocketThread serverSocketThread;
+        ServerSocket serverSocket;
+        
         try {
-            serverSocket = new ServerSocket(chatClient.getMyPort());
+            serverSocket = new ServerSocket(port);
             serverSocketThread = new ServerSocketThread(serverSocket);
-            serverSocketThread.setConnectedList(connectedList);
             serverSocketThread.start();
+
+            Socket socketReturn;
+            while (true) {
+                if (serverSocketThread.getSocket() != null) {
+                    socketReturn = serverSocketThread.getSocket();
+                    serverSocketThread.setNULL();
+                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
+                    
+                    
+                }
+            }
+            
+            
+            
+
         } catch (IOException ex) {
             Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error when creating ServerSocket");
+        }
+        
+        
+    }
+    
+    private boolean isContainInList(ClientInfo otherInfo) {
+        boolean isContain = false;
+        for (int i = 0; i < listConnectedClient.size(); i++) {
+            if (listConnectedClient.get(i).getHost().equals(otherInfo.getHost())
+                    && listConnectedClient.get(i).getPort() == otherInfo.getPort()) {
+
+                System.out.println("Receive request from: " + otherInfo.getPort());
+                isContain = true;
+
+//                        ChatWindow correspondingChatWindow = this.getChatClient(i);
+//                        if (correspondingChatWindow != null) {
+//                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
+//                            receiveThread.start();
+//                        }
+                break;
+            }
+            System.out.println(listConnectedClient.get(i).getHost() + "|241|" + listConnectedClient.get(i).getPort());
+        }
+        
+        // print array
+        for (int i=0; i<listConnectedClient.size(); i++) {
+            System.out.println(listConnectedClient.get(i).getPort());
+        }
+        System.out.println("other port: " + otherInfo.getPort());
+
+        return isContain;
+    }
+
+    private void printConnectedList() {
+        System.out.println("Connected list:");
+        for (int i=0; i<listConnectedClient.size(); i++) {
+            System.out.print(listConnectedClient.get(i).getDisplayedName());
+            if (i<listConnectedClient.size()-1) {
+                System.out.print(", ");
+            }
+            else System.out.println();
+        }
+    }
+    
+    private void sendUsernameToOther(Socket socketToOther) {
+        try {
+            DataOutputStream clientOut = new DataOutputStream(socketToOther.getOutputStream());
+            System.out.println(myInfo.getUsername());
+            clientOut.writeUTF(myInfo.getUsername());
+            
+        } catch (IOException ex) {
+            System.out.println("Error reading from server: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -137,6 +233,11 @@ public class ListClientUI extends javax.swing.JFrame {
         offlineUsersLabel.setPreferredSize(new java.awt.Dimension(250, 40));
 
         friendRequestList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        friendRequestList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                friendRequestListMouseClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(friendRequestList);
 
         friendRequestsLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -207,65 +308,53 @@ public class ListClientUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onlineUserListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onlineUserListMouseClicked
-        // TODO add your handling code here:
+        System.out.println("---Click Mouse on List------------------------");
         if (onlineUserList.getSelectedIndex() != -1) {
-            ClientInfo otherInfo = this.listClient.get(onlineUserList.getSelectedIndex());
-            
-            //this.connectedList = serverSocketThread.getConnectedList();
-            List<ClientInfo> list = new ArrayList<>(serverSocketThread.getConnectedList());
-            System.out.println("---------------126---");
-            System.out.println(this.connectedList.addAll(list));
+            ClientInfo otherInfo = listClient.get(onlineUserList.getSelectedIndex());
+            System.out.println("Click on: " + otherInfo.getDisplayedName());
+            this.printConnectedList();
                         
-            if (this.isContainInList(otherInfo)) {                
+            if (this.isContainInList(otherInfo)) {
+                System.out.println("Selected Client is in connect");
+                System.out.println("---------------------------");
                 return;
             }
             
-            connectedList.add(otherInfo);
-            serverSocketThread.setConnectedList(connectedList);
-            connectedList.clear();
+            listConnectedClient.add(otherInfo);
             
             try {
                 Socket socketToOther = new Socket(otherInfo.getHost(), otherInfo.getPort());
+                
+                // Send my username to client who is being clicked
+                this.sendUsernameToOther(socketToOther);
 
                 ChatWindowThread chatWindowThread = new ChatWindowThread(
                         this.serverSocket,
                         socketToOther,
-                        otherInfo
+                        otherInfo,
+                        myInfo
                 );
-                                
+                System.out.println("Socket send");
                 chatWindowThread.start();
+
             } catch (IOException ex) {
                 Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
                 ex.printStackTrace();
             }
+            
         }
         
         onlineUserList.clearSelection();
+        System.out.println("---End Click Mouse on List------------------------");
     }//GEN-LAST:event_onlineUserListMouseClicked
 
-    public void listen(int port) {
-        ServerSocket serverSocket;
-        ServerSocketThread serverSocketThread;
-        
-        try {
-            serverSocket = new ServerSocket(port);
-            serverSocketThread = new ServerSocketThread(serverSocket);
-            serverSocketThread.start();
-
-            Socket socketReturn;
+    private void friendRequestListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_friendRequestListMouseClicked
+        if (friendRequestList.getSelectedIndex() != -1) {
             
-            while (true) {
-                if (serverSocketThread.getSocket() != null) {
-                    socketReturn = serverSocketThread.getSocket();
-                    serverSocketThread.setNULL();
-                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());                    
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    
+        
+    }//GEN-LAST:event_friendRequestListMouseClicked
+            
     /**
      * @param args the command line arguments
      */
@@ -296,7 +385,7 @@ public class ListClientUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ListClientUI(chatClient).setVisible(true);
+                new ListClientUI(chatClient);
             }
         });
     }
@@ -316,62 +405,4 @@ public class ListClientUI extends javax.swing.JFrame {
     private javax.swing.JList<String> onlineUserList;
     private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
-
-//    public void listen(int port) {
-//        ServerSocketThread serverSocketThread;
-//        ServerSocket serverSocket;
-//        
-//        try {
-//            serverSocket = new ServerSocket(port);
-//            serverSocketThread = new ServerSocketThread(serverSocket);
-//            serverSocketThread.start();
-//
-//            Socket socketReturn;
-//            while (true) {
-//                if (serverSocketThread.getSocket() != null) {
-//                    socketReturn = serverSocketThread.getSocket();
-//                    serverSocketThread.setNULL();
-//                    ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
-//                    
-//                    
-//                }
-//            }
-//            
-//            
-//            
-//
-//        } catch (IOException ex) {
-//            Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        
-//        
-//    }
-    
-    private boolean isContainInList(ClientInfo otherInfo) {
-        boolean isContain = false;
-        for (int i = 0; i < connectedList.size(); i++) {
-            if (connectedList.get(i).getHost().equals(otherInfo.getHost())
-                    && connectedList.get(i).getPort() == otherInfo.getPort()) {
-
-                System.out.println("Receive request from: " + otherInfo.getPort());
-                isContain = true;
-
-//                        ChatWindow correspondingChatWindow = this.getChatClient(i);
-//                        if (correspondingChatWindow != null) {
-//                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
-//                            receiveThread.start();
-//                        }
-                break;
-            }
-            System.out.println(connectedList.get(i).getHost() + "|241|" + connectedList.get(i).getPort());
-        }
-        
-        // print array
-        for (int i=0; i<connectedList.size(); i++) {
-            System.out.println(connectedList.get(i).getPort());
-        }
-        System.out.println("other port: " + otherInfo.getPort());
-
-        return isContain;
-    }
 }

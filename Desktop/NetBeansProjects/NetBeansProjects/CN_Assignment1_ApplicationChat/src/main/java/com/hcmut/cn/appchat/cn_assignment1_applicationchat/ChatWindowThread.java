@@ -18,23 +18,19 @@ public class ChatWindowThread extends Thread {
     private Socket socketSendFile;
     private ChatWindow chatWindow;
     private ClientInfo otherInfo;
-    
+    private ClientInfo myInfo;
     
 
-    ChatWindowThread(ServerSocket serverSocket, Socket socketMessage, Socket socketSendFile) {
-        this.serverSocket = serverSocket;
-        this.socketMessage = socketMessage;
-        this.socketSendFile = socketSendFile;
-    }
-
-    ChatWindowThread(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo) {
+    ChatWindowThread(ServerSocket serverSocket, Socket socketMessage, 
+            ClientInfo otherInfo, ClientInfo myInfo) {
         this.serverSocket = serverSocket;
         this.socketMessage = socketMessage;
         this.otherInfo = otherInfo;
+        this.myInfo = myInfo;
     }
     
     public void run() {
-        chatWindow = new ChatWindow(serverSocket, socketMessage, otherInfo);
+        chatWindow = new ChatWindow(serverSocket, socketMessage, otherInfo, myInfo);
     }
     
     public ChatWindow getChatWindow() {

@@ -5,6 +5,7 @@
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JList;
 
 /**
  *
@@ -22,60 +24,94 @@ public class ServerSocketThread extends Thread{
     private Socket returnSocket;
     private List<ClientInfo> connectedList;
     private List<ChatWindow> chatWindowList;
+    private List<ClientInfo> activeList;
+    private ClientInfo myInfo;
     
     public ServerSocketThread(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
         connectedList = new ArrayList<ClientInfo>();
         chatWindowList = new ArrayList<ChatWindow>();
     }
+
+    ServerSocketThread(ServerSocket serverSocket, List<ClientInfo> connectedList) {
+        this(serverSocket);
+        this.connectedList = connectedList;
+    }
+
+    ServerSocketThread(ServerSocket serverSocket, List<ClientInfo> connectedList, List<ClientInfo> listClient) {
+        this(serverSocket);
+        this.connectedList = connectedList;
+        this.activeList = listClient;
+    }
+
+    ServerSocketThread(ServerSocket serverSocket, List<ClientInfo> connectedList, List<ClientInfo> listClient, ClientInfo myInfo) {
+        this(serverSocket, connectedList, listClient);
+        this.myInfo = myInfo;
+    }
+
+    
     
     public void run() {
         while (true) {
             try {
+                System.out.println("-----> Start ServerSocketThread listening");
                 returnSocket = serverSocket.accept();
-                System.out.println("ServerSocket accept");
-                ClientInfo otherInfo = new ClientInfo(returnSocket.getInetAddress().getHostAddress(), returnSocket.getLocalPort());
-                System.out.println("Create other socket: " + otherInfo.getHost() + "|" + otherInfo.getPort());
                 
-                boolean isContain = false;
-                for (int i = 0; i < connectedList.size(); i++) {
-                    if (connectedList.get(i).getHost().equals(otherInfo.getHost()) 
-                            && connectedList.get(i).getPort() == otherInfo.getPort()) {
+                this.updateConnectedList(returnSocket); // true neu co update, false neu ko update
+                
+                // kiem tra trong connectedList co receivedClientInfo ko? 
+                //      hàm updateConnectedList kiểm tra việc này
+                // neu khong: new ChatWindowThread moi, them ClientInfo vao list - đã làm trong hàm, 
+                //            start ChatWindowThread de new ChatWindow
+                //            them ChatWindow vua tao vao listChatWindow
+                
+                // neu co: tim trong listChatWindow, get ChatWindow ra,
+                // new mot receiveThread ung voi ChatWindow da tao de nhan file
+                // duoc ben kia co nhu cau gui toi
+                
+                ClientInfo receivedClientInfo = this.updateConnectedList(returnSocket);
+                if (receivedClientInfo == null ) {
+                    // CO receivedClientInfo trong connectedList
+                    
+//                    for (ChatWindow chatWindow: chatWindowList){
+//                        if (chatWindow.getMyInfo().getUsername().equals(receivedClientInfo.getUsername())) {
+//                            correspondingChatWD = chatWindow;
+//                        }
+//                    }
+
+                    ChatWindow correspondingChatWD = null;
+                    for (int i=0; i<chatWindowList.size(); i++) {
+                        ChatWindow tempChatWD = chatWindowList.get(i);
                         
-                        System.out.println("Receive request from: " + otherInfo.getPort());
-                        isContain = true;
-                        
-                        ChatWindow correspondingChatWindow = this.getChatClient(i);
-                        if (correspondingChatWindow != null) {
-                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
-                            receiveThread.start();
+                        if (tempChatWD.getMyInfo().getUsername().equals(receivedClientInfo.getUsername())) {
+                            correspondingChatWD = tempChatWD;
                         }
-                        
-                        
-                        break;
                     }
-                    System.out.println(connectedList.get(i).getHost()+ "|" + connectedList.get(i).getPort());
+                    
+                    if (correspondingChatWD != null) {
+                        ReceiveThread receiveThread = new ReceiveThread(serverSocket, correspondingChatWD);
+                        receiveThread.start();
+                    }
                 }
-                
-                if (isContain) continue;
-                
-                connectedList.add(otherInfo);
-                
-                System.out.println(returnSocket.getInetAddress().getHostAddress() +"|"+ returnSocket.getLocalPort());
-                
-                ChatWindowThread chatWindowThread = new ChatWindowThread(
-                        serverSocket,
-                        returnSocket,
-                        otherInfo
-                );
-                chatWindowThread.start();
-                chatWindowList.add(chatWindowThread.getChatWindow());
+                else {
+                    // KHONG co receivedClientInfo trong connectedList
+                    ChatWindowThread chatWindowThread = new ChatWindowThread(
+                            serverSocket, 
+                            returnSocket, 
+                            receivedClientInfo, 
+                            myInfo
+                    );
+                    chatWindowThread.start();
+                    ChatWindow chatWindow = chatWindowThread.getChatWindow();
+                    
+                    chatWindowList.add(chatWindow);
+                }
 
             } catch (IOException ex) {
                 Logger.getLogger(ServerSocketThread.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            
+            System.out.println("----<> End ServerSocketThread listening");
         }
 
     }
@@ -100,5 +136,53 @@ public class ServerSocketThread extends Thread{
     
     public List<ClientInfo> getConnectedList() {
         return this.connectedList;
+    }
+
+    private ClientInfo updateConnectedList(Socket returnSocket) {
+        try {
+            DataInputStream dataIn = new DataInputStream(returnSocket.getInputStream());
+            String receivedUsername = dataIn.readUTF();
+            System.out.println("receivedUsername: " + receivedUsername);
+            ClientInfo receivedClientInfo = null;
+            
+//            for (ClientInfo clientInfo: activeList) {
+//                if (clientInfo.getUsername().equals(receivedUsername)) {
+//                    receivedClientInfo = clientInfo;
+//                }
+//                System.out.println("username in activeList: " + clientInfo.getUsername() + "|");
+//            }
+
+            for (int i=0; i<activeList.size(); i++) {
+                ClientInfo tempInfo = activeList.get(i);
+                if (tempInfo.getUsername().equals(receivedUsername)) {
+                    receivedClientInfo = tempInfo;
+                }
+            }
+            
+            if (receivedClientInfo==null) {
+                System.out.println("Connection is interrupted");
+                return null;
+            }
+            
+            boolean isContain = false;
+            for (ClientInfo clientInfo: connectedList) {
+                if (clientInfo.getUsername().equals(receivedUsername)) {
+                    isContain = true;
+                    break;
+                }
+            }
+            
+            if (isContain) {
+                return null;
+            }
+            else {
+                connectedList.add(receivedClientInfo);
+                return receivedClientInfo;
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ServerSocketThread.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 }

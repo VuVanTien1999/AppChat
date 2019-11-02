@@ -48,6 +48,14 @@ public class ClientInfo {
         return this.port;
     }
     
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    
+    public void setDisplayedName(String displayedName) {
+        this.displayedName = displayedName;
+    }
+    
     public void setActiveStatus(boolean status) {
         this.activeStatus = status;
     }
