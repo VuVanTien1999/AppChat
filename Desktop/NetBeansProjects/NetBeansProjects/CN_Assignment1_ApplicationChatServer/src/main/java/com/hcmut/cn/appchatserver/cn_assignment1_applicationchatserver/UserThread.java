@@ -149,7 +149,7 @@ public class UserThread extends Thread {
                 }
                 else if (incomingMessage.equals("Accept friend request")) {
                     String friendRequestUsername = toServer.readUTF();
-                    
+                    System.out.println(friendRequestUsername);
                     this.server.acceptFriend(usernameThread, friendRequestUsername);
                     
                     fromServer.writeUTF(friendRequestUsername + " and " + this.usernameThread + " has become friends");

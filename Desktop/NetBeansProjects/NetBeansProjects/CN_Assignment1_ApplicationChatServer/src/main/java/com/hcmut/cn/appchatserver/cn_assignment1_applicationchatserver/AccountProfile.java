@@ -105,16 +105,19 @@ public class AccountProfile {
     public void acceptFriend(String newFriendUsername) {
         this.numOfFriendRequest--;
         this.friendRequestList.remove(newFriendUsername);
+        System.out.println("Accepted");
     }
     
     public void addFriend(String newFriendUsername) {
         this.numOfFriend++;
         this.friendList.add(newFriendUsername);
+        System.out.println("Fr added");
     }
     
     public void addNewFriendRequest(String newFriendUsername) {
         this.numOfFriendRequest++;
         this.friendRequestList.add(newFriendUsername);
+        System.out.println("Req added");
     }
     
     public void declineFriendRequest(String friendUsername){

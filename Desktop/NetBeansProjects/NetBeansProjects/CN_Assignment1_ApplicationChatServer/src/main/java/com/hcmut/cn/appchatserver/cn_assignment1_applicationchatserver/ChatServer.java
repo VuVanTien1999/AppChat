@@ -146,10 +146,6 @@ public class ChatServer {
             ex.printStackTrace();
         }    
     }
-        
-    private void refreshAccountList() {
-        this.userList = this.readFromAccountList();
-    }
     
     public boolean isAccountExisted(String username) {
         AccountProfile existedAccount = this.userList.stream()
@@ -214,7 +210,6 @@ public class ChatServer {
         return result;
     }
     
-    // Edited here
     public boolean createAccount(String username, String password, String displayedName) {       
         if (!this.isAccountExisted(username)) {
             writeToAccountLine(username, password, displayedName);
@@ -277,10 +272,6 @@ public class ChatServer {
         return new Pair<String, String>(bool, notice);
     }
     
-    public List<AccountProfile> getUserList() {
-        return this.userList;
-    }
-    
     public void declineFriendRequest(String username, String friendUsername) {
         AccountProfile myAccount = this.userList.stream()
                     .filter(user -> user.getUsername().equals(username))
@@ -288,6 +279,10 @@ public class ChatServer {
                     .orElse(null);
         
         myAccount.declineFriendRequest(friendUsername);
+    }
+    
+    public List<AccountProfile> getUserList() {
+        return this.userList;
     }
     
     public static void main(String[] args) { 
