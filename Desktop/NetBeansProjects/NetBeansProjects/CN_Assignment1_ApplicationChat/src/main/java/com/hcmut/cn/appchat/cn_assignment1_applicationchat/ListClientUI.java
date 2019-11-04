@@ -79,10 +79,6 @@ public class ListClientUI extends javax.swing.JFrame {
         
         // Pass ServerSocket & connected client list to another thread then start itself
         this.serverSocketThread = new ServerSocketThread(
-                this.serverSocket, 
-                listConnectedClient, 
-                this.listOnlineClient, 
-                myInfo,
                 this
         );
         this.serverSocketThread.start();
@@ -111,6 +107,7 @@ public class ListClientUI extends javax.swing.JFrame {
             System.out.println("Time refreshList, listClient: " + listClient.size());
             System.out.println("Time refreshList, listOnlineClient size: " + listOnlineClient.size());
             System.out.println("Time refreshList, listConnectedClient size: " + listConnectedClient.size());
+            System.out.println("Time refreshList, listChatWindow size: " + this.getChatWindowList().size());
 
             listClient.forEach((client) -> {
                 if (client.getActiveStatus()) {
@@ -138,7 +135,7 @@ public class ListClientUI extends javax.swing.JFrame {
         
         try {
             serverSocket = new ServerSocket(port);
-            serverSocketThread = new ServerSocketThread(serverSocket);
+            serverSocketThread = new ServerSocketThread(this);
             serverSocketThread.start();
 
             Socket socketReturn;
@@ -368,6 +365,7 @@ public class ListClientUI extends javax.swing.JFrame {
                         myInfo,
                         this
                 );
+                this.addToChatWindowList(chatWindow);
                 
                 // After connect success, check if connection interrupted
                 // Remove B from connectList, B's chatWindow from chatWindowList
@@ -509,7 +507,7 @@ public class ListClientUI extends javax.swing.JFrame {
     private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
 
-    public ClientInfo getClientInfoInOnlineList(String receivedUsername) {
+    public ClientInfo getClientInfoFromOnlineList(String receivedUsername) {
         // method to get the ClientInfo from listOnlineClient in ListClientUI
         // return null if there is no ClientInfo specified
         
@@ -528,7 +526,23 @@ public class ListClientUI extends javax.swing.JFrame {
         return this.listConnectedClient;
     }
     
+//    private List<ChatWindow> getChatWindowList() {
+//        return this.serverSocketThread.getChatWindowList();
+//    }
+
     public List<ChatWindow> getChatWindowList() {
         return this.serverSocketThread.getChatWindowList();
+    }
+
+    ServerSocket getServerSocket() {
+        return this.serverSocket;
+    }
+
+    ClientInfo getMyInfo() {
+        return this.myInfo;
+    }
+
+    private void addToChatWindowList(ChatWindow chatWindow) {
+        this.getChatWindowList().add(chatWindow);
     }
 }

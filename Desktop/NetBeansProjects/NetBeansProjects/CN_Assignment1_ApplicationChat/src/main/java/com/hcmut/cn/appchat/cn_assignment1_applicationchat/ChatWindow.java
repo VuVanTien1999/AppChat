@@ -6,7 +6,6 @@
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 import java.io.File;
 import java.awt.FileDialog;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.SendOutFileThread;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ParallelSendThread;
 import java.net.Socket;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ReceiveThread;
