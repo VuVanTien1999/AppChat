@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.DefaultListModel;
 import javax.swing.Timer;
 
@@ -32,8 +33,13 @@ public class ListClientUI extends javax.swing.JFrame {
     private ServerSocketThread serverSocketThread;
     
     private List<ClientInfo> listClient;
+    private List<ClientInfo> listOnlineClient;
     private List<ClientInfo> listConnectedClient;
+    
+    private List<String> listFriendRequest = new ArrayList<>();
 
+    private AddFriendUI addFriend;
+    
     /**
      * Creates new form ListClientUI
      */
@@ -44,7 +50,10 @@ public class ListClientUI extends javax.swing.JFrame {
         
         // Get client list from ChatClient
         this.chatClient = chatClient;
-        this.listClient = this.chatClient.getClientList();
+        //this.listClient = this.chatClient.getClientList();
+//        this.listOnlineClient = this.listClient.stream()
+//                .filter(client -> client.getActiveStatus())
+//                .collect(Collectors.toList());
         this.listConnectedClient = new ArrayList<ClientInfo>();
         this.myInfo = chatClient.getMyInfo();
         
@@ -57,6 +66,10 @@ public class ListClientUI extends javax.swing.JFrame {
         offlineUserList.setEnabled(false);
         friendRequestList.setEnabled(true);
         
+        // Disable unnecessary buttons
+        this.btnAceptFriendRequest.setEnabled(false);
+        this.btnDeclineFriendRequest.setEnabled(false);
+        
         // Create ServerSocket for client to listen for other clients
         try {
             this.serverSocket = new ServerSocket(chatClient.getMyPort());
@@ -67,7 +80,7 @@ public class ListClientUI extends javax.swing.JFrame {
         }
         
         // Pass ServerSocket & connected client list to another thread then start itself
-        this.serverSocketThread = new ServerSocketThread(this.serverSocket, listConnectedClient, listClient, myInfo);
+        this.serverSocketThread = new ServerSocketThread(this.serverSocket, this.listConnectedClient, this.listClient, this.myInfo);
         this.serverSocketThread.start();
 
         // Create models for three lists above
@@ -81,22 +94,31 @@ public class ListClientUI extends javax.swing.JFrame {
         friendRequestList.setModel(modelForFriendRequests);
         
         // Create another thread for refreshing these lists
-        Timer refreshList = new Timer(2000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) { 
-                modelForOnlineUsers.removeAllElements();
-                modelForOfflineUsers.removeAllElements();
-                
-                List<ClientInfo> listFriends = chatClient.getClientList();
-                
-                for (int i = 0; i < listFriends.size(); i++) {
-                    boolean userStatus = listFriends.get(i).getActiveStatus();
-                    if (userStatus) {
-                        modelForOnlineUsers.addElement(listFriends.get(i).getDisplayedName() + "(" + listFriends.get(i).getUsername() + ")");
-                    }
-                    else modelForOfflineUsers.addElement(listFriends.get(i).getDisplayedName() + "(" + listFriends.get(i).getUsername() + ")");
-                }               
-            }
+        Timer refreshList = new Timer(2000, (ActionEvent e) -> {
+            modelForOnlineUsers.removeAllElements();
+            modelForOfflineUsers.removeAllElements();
+            //modelForFriendRequests.removeAllElements();
+                                   
+            listClient = chatClient.getClientList();
+            listOnlineClient = listClient.stream()
+                    .filter(client -> client.getActiveStatus())
+                    .collect(Collectors.toList());
+            listClient.forEach((client) -> {
+                if (client.getActiveStatus()) {
+                    modelForOnlineUsers.addElement(client.getDisplayedName() + "(" + client.getUsername() + ")");
+                }
+                else {
+                    modelForOfflineUsers.addElement(client.getDisplayedName() + "(" + client.getUsername() + ")");
+                }
+            });
+            
+            List<String> tempListFriendRequest = chatClient.getFriendRequest();
+            if (tempListFriendRequest.size() > listFriendRequest.size()) {
+                for (int i = listFriendRequest.size(); i < tempListFriendRequest.size(); i++) {
+                    listFriendRequest.add(i, tempListFriendRequest.get(i));
+                    modelForFriendRequests.addElement(tempListFriendRequest.get(i));
+                }
+            }  
         });
         refreshList.start();
     }
@@ -116,19 +138,11 @@ public class ListClientUI extends javax.swing.JFrame {
                     socketReturn = serverSocketThread.getSocket();
                     serverSocketThread.setNULL();
                     ClientInfo otherClient = new ClientInfo(socketReturn.getInetAddress().getHostAddress(), socketReturn.getPort());
-                    
-                    
                 }
             }
-            
-            
-            
-
         } catch (IOException ex) {
             Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
     }
     
     private boolean isContainInList(ClientInfo otherInfo) {
@@ -140,11 +154,6 @@ public class ListClientUI extends javax.swing.JFrame {
                 System.out.println("Receive request from: " + otherInfo.getPort());
                 isContain = true;
 
-//                        ChatWindow correspondingChatWindow = this.getChatClient(i);
-//                        if (correspondingChatWindow != null) {
-//                            ReceiveThread receiveThread = new ReceiveThread(returnSocket, correspondingChatWindow);
-//                            receiveThread.start();
-//                        }
                 break;
             }
             System.out.println(listConnectedClient.get(i).getHost() + "|241|" + listConnectedClient.get(i).getPort());
@@ -208,7 +217,6 @@ public class ListClientUI extends javax.swing.JFrame {
         jToggleButton1.setText("jToggleButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(600, 400));
 
         onlineUserList.setFont(new java.awt.Font("Tahoma", 0, 15)); // NOI18N
         onlineUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -244,11 +252,26 @@ public class ListClientUI extends javax.swing.JFrame {
         friendRequestsLabel.setText("Friend requests");
 
         btnAceptFriendRequest.setText("Accept");
+        btnAceptFriendRequest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAceptFriendRequestActionPerformed(evt);
+            }
+        });
 
         btnDeclineFriendRequest.setText("Decline");
+        btnDeclineFriendRequest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeclineFriendRequestActionPerformed(evt);
+            }
+        });
 
         btnAddFriend.setText("Let's make a friend");
         btnAddFriend.setActionCommand("");
+        btnAddFriend.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddFriendActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -350,10 +373,77 @@ public class ListClientUI extends javax.swing.JFrame {
 
     private void friendRequestListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_friendRequestListMouseClicked
         if (friendRequestList.getSelectedIndex() != -1) {
-            
+            this.btnAceptFriendRequest.setEnabled(true);
+            this.btnDeclineFriendRequest.setEnabled(true);
+        }
+    }//GEN-LAST:event_friendRequestListMouseClicked
+
+    private void btnAceptFriendRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptFriendRequestActionPerformed
+        int selectedIndex = this.friendRequestList.getSelectedIndex();
+        String usernameRequest = "";
+        
+        if (selectedIndex != -1) {
+            usernameRequest = this.friendRequestList.getSelectedValue();
+                        
+            chatClient.acceptFriendRequest(usernameRequest);
         }
         
-    }//GEN-LAST:event_friendRequestListMouseClicked
+        this.friendRequestList.clearSelection();
+        //this.listFriendRequest.remove(usernameRequest);
+        
+        this.btnAceptFriendRequest.setEnabled(false);
+        this.btnDeclineFriendRequest.setEnabled(false);
+    }//GEN-LAST:event_btnAceptFriendRequestActionPerformed
+
+    private void btnDeclineFriendRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeclineFriendRequestActionPerformed
+        // TODO add your handling code here:
+        int selectedIndex = this.friendRequestList.getSelectedIndex();
+        if (selectedIndex != -1) {
+            String usernameRequest = this.friendRequestList.getSelectedValue();
+            
+            System.out.println("Click on: " + usernameRequest);
+            
+            chatClient.declineFriendRequest(usernameRequest);
+
+            System.out.println("Remove friend reuqest: " + usernameRequest);            
+            
+            this.friendRequestList.remove(selectedIndex);
+        }
+        
+        this.friendRequestList.clearSelection();
+        this.btnAceptFriendRequest.setEnabled(false);
+        this.btnDeclineFriendRequest.setEnabled(false);
+    }//GEN-LAST:event_btnDeclineFriendRequestActionPerformed
+
+    private void btnAddFriendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddFriendActionPerformed
+        // TODO add your handling code here:
+        this.addFriend = new AddFriendUI();
+        
+        Thread getFriendRequest = new Thread() {
+            public void run() {
+                while(true) {
+                    synchronized(addFriend) {
+                        try {
+                            addFriend.wait();
+                        } catch(InterruptedException ez){
+                            ez.printStackTrace();
+                        }
+                    }
+
+                    if (addFriend.isSend()) {
+                        String result = chatClient.sendFriendRequest(addFriend.getUsername());
+
+                        addFriend.setLabel(result);
+                    }
+                    else {
+                        addFriend.setVisible(false);
+                        break;
+                    }
+                }
+            }
+        };     
+        getFriendRequest.start();
+    }//GEN-LAST:event_btnAddFriendActionPerformed
             
     /**
      * @param args the command line arguments

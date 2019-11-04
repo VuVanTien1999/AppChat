@@ -31,11 +31,16 @@ public class LoginUI {
             }
 
             if (signin.isSignin()) {
-                if (!client.verifyAccount(signin.getUsernameSignin(), signin.getPasswordSignin())) {
-                    signin.setLabelNoti("Wrong username or password.");
+                String result = client.verifyAccount(signin.getUsernameSignin(), signin.getPasswordSignin());
+                if (result.equals("false")) {
+                    signin.setLabelNoti("Wrong username or password");
                     signin.hideAccountInfo();
                 }
-                else {
+                else if (result.equals("Login somewhere else")) {
+                    signin.setLabelNoti("Login somewhere else");
+                    signin.hideAccountInfo();
+                }
+                else if (result.equals("true")) {
                     signin.setVisible(false);
                     break;
                 }
@@ -58,11 +63,11 @@ public class LoginUI {
                         if (client.createAccount(signup.getUsernameSignup(), signup.getPasswordSignup(), signup.getDisplayednaemSignup())) {
                             signin.setVisible(true);
                             signup.setVisible(false);                            
-                            signin.setLabelNoti("Re-enter username and password to login.");
+                            signin.setLabelNoti("Re-enter username and password to login");
                             break;
                         }
                         else {
-                            signup.label.setText("Create acocunt failed. Try again.");
+                            signup.label.setText("Create acocunt failed. Try again");
                         }
                     }
                     else {

@@ -57,7 +57,7 @@ public class ChatClient {
         }
     }
     
-    public boolean verifyAccount(String username, char[] password) {
+    public String verifyAccount(String username, char[] password) {
         String response = "";
 
         try {
@@ -73,12 +73,11 @@ public class ChatClient {
             ex.printStackTrace();
         }
         
-        if(response.equals("true")) { 
+        if (response.equals("true")) {
             this.myInfo.setUsername(username);
-            
-            return true;
         }
-        else return false;
+        
+        return response;
     }
     
     public boolean createAccount(String username, char[] password, String displayedName) {
@@ -100,33 +99,115 @@ public class ChatClient {
         else return false;
     }
     
+    public String sendFriendRequest(String username) {
+        String response = "";
+        String result = "";
+        
+        if (this.myInfo.getUsername().equals(username)) {
+            result = "Nah, you're not someone else";
+        }
+        else {
+            try {
+                fromClient.writeUTF("Send friend request");
+                fromClient.writeUTF(username);
+
+                response = toClient.readUTF();
+            } catch (IOException ex) {
+                System.out.println("Error writing to server: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+            
+            if (response.equals("You guys have been friend already")) result = "Seriously...";
+            else if(response.equals("Request has been sent before")) result = "Stop doing this bae";
+            else if(response.equals("Request has been sent successfully")) result = "Olala, your request has been sent";
+            else if(response.equals("Username isn't existed")) result = "Oops, input username isn't exist";
+        }
+        return result;
+    }
+    
+    public void acceptFriendRequest(String username) {
+        String response = "";
+        
+        try {
+            fromClient.writeUTF("Accept friend request");
+            fromClient.writeUTF(username);
+            
+            response = toClient.readUTF();
+        } catch (IOException ex) {
+            System.out.println("Error writing to server: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        if(response.equals(username + " and " + this.myInfo.getUsername() + " has become friends")) return;
+    }
+    
+    public void declineFriendRequest(String username) {
+        String response = "";
+        
+        try {
+            fromClient.writeUTF("Decline friend request");
+            fromClient.writeUTF(username);
+            
+            response = toClient.readUTF();
+        } catch (IOException ex) {
+            System.out.println("Error writing to server: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        if(response.equals("You have declined friend request of " + username)) return;
+    }
+    
     public List<ClientInfo> getClientList() {
         List<ClientInfo> listFriendsInfo = new ArrayList<ClientInfo>();
         
         try {         
             this.fromClient.writeUTF("Get list of users");
 
-            int numOfFriend = Integer.valueOf(this.toClient.readUTF());
-            
-            String friendUsername, friendDisplayedname;
-            boolean friendActiveStatus;
-            String friendHost;
-            int friendtPort;
+            //if (this.toClient.readUTF().equals("Return list of users")) {
+                int numOfFriend = Integer.valueOf(this.toClient.readUTF());
 
-            for (int i = 0; i < numOfFriend; i++) {
-                friendUsername = this.toClient.readUTF();
-                friendDisplayedname = this.toClient.readUTF();
-                friendActiveStatus = Boolean.valueOf(this.toClient.readUTF());
-                friendHost = this.toClient.readUTF();
-                friendtPort = Integer.valueOf(this.toClient.readUTF());
-                
-                listFriendsInfo.add(new ClientInfo(friendUsername, friendDisplayedname, friendActiveStatus, friendHost, friendtPort));
-            }
+                String friendUsername, friendDisplayedname;
+                boolean friendActiveStatus;
+                String friendHost;
+                int friendtPort;
+
+                for (int i = 0; i < numOfFriend; i++) {
+                    friendUsername = this.toClient.readUTF();
+                    friendDisplayedname = this.toClient.readUTF();
+                    friendActiveStatus = Boolean.valueOf(this.toClient.readUTF());
+                    friendHost = this.toClient.readUTF();
+                    friendtPort = Integer.valueOf(this.toClient.readUTF());
+
+                    listFriendsInfo.add(new ClientInfo(friendUsername, friendDisplayedname, friendActiveStatus, friendHost, friendtPort));
+                }
+            //}
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
         }
-        return listFriendsInfo;        
+        
+        return listFriendsInfo;
+    }
+    
+    public List<String> getFriendRequest() {
+        List<String> listFriendRequest = new ArrayList<>();
+        
+        try {         
+            this.fromClient.writeUTF("Get list of friend requests");
+
+            //if (this.toClient.readUTF().equals("Return list of friend requests")) {
+                int numOfRequest = Integer.valueOf(this.toClient.readUTF());
+
+                for (int i = 0; i < numOfRequest; i++) {
+                    listFriendRequest.add(this.toClient.readUTF());
+                }
+            //}
+        } catch (IOException ex) {
+            System.out.println("Error writing to server: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        return listFriendRequest;
     }
     
     public Socket accept() {

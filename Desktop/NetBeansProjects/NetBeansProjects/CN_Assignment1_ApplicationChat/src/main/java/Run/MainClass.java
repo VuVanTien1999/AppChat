@@ -25,7 +25,7 @@ public class MainClass {
         
         LoginUI login = new LoginUI(chatClient);
         login.execute();
-        
+          
         ListClientUI listClientUI = new ListClientUI(chatClient);
     }
 }
