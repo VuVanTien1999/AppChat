@@ -23,10 +23,14 @@ public class AccountProfile {
     private String host = "None";
     private int port = 0;
         
-    public AccountProfile(String username, String password, String displayedName, int numOfFriend, String[] friends) {
+    public AccountProfile(String username, String password, String displayedName) {
         this.username = username;
         this.password = password;
         this.displayedName = displayedName;
+    }
+    
+    public AccountProfile(String username, String password, String displayedName, int numOfFriend, String[] friends) {
+        this(username, password, displayedName);
         this.numOfFriend = numOfFriend;
         
         for (int i = 0; i < numOfFriend; i++) {
@@ -40,6 +44,10 @@ public class AccountProfile {
     
     public boolean isAccountValid(String username, String password) {
         return this.username.equals(username) && this.password.equals(password);
+    }
+    
+    public boolean isFriend(String username) {
+        return this.friendList.contains(username);
     }
     
     public String getUsername() {
@@ -93,17 +101,29 @@ public class AccountProfile {
     public void setActiveStatus(boolean status) {
         this.activeStatus = status;
     }
+        
+    public void acceptFriend(String newFriendUsername) {
+        this.numOfFriendRequest--;
+        this.friendRequestList.remove(newFriendUsername);
+    }
     
-    public void addNewFriend(String newFriendUsername) {
+    public void addFriend(String newFriendUsername) {
+        this.numOfFriend++;
         this.friendList.add(newFriendUsername);
     }
     
     public void addNewFriendRequest(String newFriendUsername) {
+        this.numOfFriendRequest++;
         this.friendRequestList.add(newFriendUsername);
     }
     
-    public void deleteFriendRequest(String friendUsername){
+    public void declineFriendRequest(String friendUsername){
+        this.numOfFriendRequest--;
         this.friendRequestList.remove(friendUsername);
+    }
+    
+    public boolean isRequestExited(String requestUsername) {
+        return this.friendRequestList.contains(requestUsername);
     }
     
     public void setHost(String host) {

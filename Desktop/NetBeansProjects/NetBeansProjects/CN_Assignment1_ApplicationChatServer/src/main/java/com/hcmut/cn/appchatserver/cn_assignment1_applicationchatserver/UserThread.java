@@ -9,6 +9,7 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import javafx.util.Pair;
 
 /**
  *
@@ -45,13 +46,12 @@ public class UserThread extends Thread {
                     password = toServer.readUTF();
                     displayedName = toServer.readUTF();
 
-                    System.out.print(System.getProperty("line.separator") + "Create: " + username + " " + password + " " + displayedName);
-
                     //Write acocunt info to file
-                    if (server.isAccountExisted(username, password, displayedName)) {
+                    if (server.isAccountExisted(username)) {
                         fromServer.writeUTF("false");
                     }
                     else {
+                        server.createAccount(username, password, displayedName);
                         fromServer.writeUTF("true");
                     }
                 }
@@ -64,23 +64,22 @@ public class UserThread extends Thread {
                     host = toServer.readUTF();
                     port = Integer.valueOf(toServer.readUTF());
 
-                    System.out.print(System.getProperty("line.separator") + "Verify: " + username + " " + password);
-
                     //Read file and find acocunt info 
-                    if (server.isAccountValid(username, password, host, port)) {
-                        this.usernameThread = username;
-                        fromServer.writeUTF("true");
-                        break;
+                    if (server.isAccountValid(username, password)) {
+                        Pair<String, String> result = server.isAccountOnline(username);
+                        if (result.getKey().equals("true")) {
+                            fromServer.writeUTF("Login somewhere else");
+                        }
+                        else {
+                            this.usernameThread = username;
+                            this.server.setInfoForOnlineUser(username, host, port);
+                            fromServer.writeUTF("true");
+                            break;
+                        }
                     }
                     else fromServer.writeUTF("false");
                 }
             } while(true);
-            
-            List<AccountProfile> tempList = this.server.getUserList();
-            for (int i = 0; i < tempList.size(); i++) {
-                System.out.println(tempList.get(i).getUsername());
-                System.out.println(String.valueOf(tempList.get(i).getActiveStatus()));
-            }
             
             List<AccountProfile> userList;
             while(true) {
@@ -91,7 +90,9 @@ public class UserThread extends Thread {
                             .findAny()
                             .orElse(null);
                 
-                if (toServer.readUTF().equals("Get list of users")) {
+                String incomingMessage = toServer.readUTF();
+                
+                if (incomingMessage.equals("Get list of users")) {
                     //fromServer.writeUTF("Return list of users");
                     
                     // Return number of friend
@@ -113,52 +114,52 @@ public class UserThread extends Thread {
                         fromServer.writeUTF(String.valueOf(temp.getPort()));
                     } 
                 }
-                else if (toServer.readUTF().equals("Get list of friend requests")) {
-                    fromServer.writeUTF("Return list of friend requests");
+                else if (incomingMessage.equals("Get list of friend requests")) {
+                    //fromServer.writeUTF("Return list of friend requests");
                     
                     // Return number of friend request
+                    //System.out.println("Req: " + String.valueOf(myProfile.getNumOfFriendRequest()));
                     fromServer.writeUTF(String.valueOf(myProfile.getNumOfFriendRequest()));    
-
-                    String[] listFriendRequestsUsername = myProfile.getFriendUsername();    
+                    //System.out.println("Req: " + String.valueOf(myProfile.getNumOfFriendRequest()));
+                    String[] listFriendRequestsUsername = myProfile.getFriendReuqestUsername();    
                     for (int i = 0; i < myProfile.getNumOfFriendRequest(); i++) {
                         // Return friend request's info (Username)
                         fromServer.writeUTF(listFriendRequestsUsername[i]);
                     }
                 }
-                else if (toServer.readUTF().equals("Send friend request")) {
+                else if (incomingMessage.equals("Send friend request")) {
                     String friendRequestUsername = toServer.readUTF();
                     
-                    if (this.server.isAccountExisted(friendRequestUsername)) {
-                        AccountProfile friendProfile = userList.stream()
-                           .filter(user -> user.getUsername().equals(friendRequestUsername))
-                           .findAny()
-                           .orElse(null);
-                        
-                        friendProfile.addNewFriendRequest(this.usernameThread);
+                    Pair<String, String> result = this.server.addFriendRequest(usernameThread, friendRequestUsername);
+                    
+                    if (result.getKey().equals("false")) {
+                        if (result.getValue().equals("Friend account isn't existed")) {
+                            fromServer.writeUTF("Username isn't existed");
+                        }
+                        if (result.getValue().equals("You're friend already")) {
+                            fromServer.writeUTF("You guys have been friend already");
+                        }
+                        else if (result.getValue().equals("Request has been sent before")) {
+                            fromServer.writeUTF("Request has been sent before");
+                        }
                     }
                     else {
-                        fromServer.writeUTF("Username isn't existed");
+                        fromServer.writeUTF("Request has been sent successfully");
                     }
                 }
-                else if (toServer.readUTF().equals("Accept friend request")) {
+                else if (incomingMessage.equals("Accept friend request")) {
                     String friendRequestUsername = toServer.readUTF();
                     
-                    myProfile.deleteFriendRequest(friendRequestUsername);
-                    myProfile.addNewFriend(friendRequestUsername);
+                    this.server.acceptFriend(usernameThread, friendRequestUsername);
                     
-                    AccountProfile friendProfile = userList.stream()
-                           .filter(user -> user.getUsername().equals(friendRequestUsername))
-                           .findAny()
-                           .orElse(null);
-                    friendProfile.addNewFriend(this.usernameThread);
-                    
-                    this.server.writeToAccountList(this.usernameThread, friendRequestUsername);
-                    this.server.writeToAccountList(friendRequestUsername, this.usernameThread);
+                    fromServer.writeUTF(friendRequestUsername + " and " + this.usernameThread + " has become friends");
                 }
-                else if (toServer.readUTF().equals("Decline friend request")) {
+                else if (incomingMessage.equals("Decline friend request")) {
                     String friendSendingRequestUsername = toServer.readUTF();
                     
-                    myProfile.deleteFriendRequest(friendSendingRequestUsername);
+                    this.server.declineFriendRequest(usernameThread, friendSendingRequestUsername);
+                    
+                    fromServer.writeUTF("You have declined friend request of " + friendSendingRequestUsername);
                 }
             }
         } catch (IOException ex) {
