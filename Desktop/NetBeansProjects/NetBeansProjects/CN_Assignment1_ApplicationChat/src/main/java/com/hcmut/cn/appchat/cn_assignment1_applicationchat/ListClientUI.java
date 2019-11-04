@@ -384,13 +384,13 @@ public class ListClientUI extends javax.swing.JFrame {
         
         if (selectedIndex != -1) {
             usernameRequest = this.friendRequestList.getSelectedValue();
-                        
+            System.out.println(usernameRequest);
             chatClient.acceptFriendRequest(usernameRequest);
         }
         
         this.friendRequestList.clearSelection();
         //this.listFriendRequest.remove(usernameRequest);
-        
+        this.friendRequestList.remove(selectedIndex);
         this.btnAceptFriendRequest.setEnabled(false);
         this.btnDeclineFriendRequest.setEnabled(false);
     }//GEN-LAST:event_btnAceptFriendRequestActionPerformed
