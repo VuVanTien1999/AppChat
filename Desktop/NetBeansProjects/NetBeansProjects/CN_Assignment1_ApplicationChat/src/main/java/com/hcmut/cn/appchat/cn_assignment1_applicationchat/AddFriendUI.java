@@ -62,7 +62,6 @@ public class AddFriendUI extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         inputUsernameForRequest.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        inputUsernameForRequest.setText("Username");
         inputUsernameForRequest.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 inputUsernameForRequestMouseClicked(evt);
@@ -79,7 +78,7 @@ public class AddFriendUI extends javax.swing.JFrame {
             }
         });
 
-        btnCancel.setText("Cancel");
+        btnCancel.setText("Done");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCancelActionPerformed(evt);

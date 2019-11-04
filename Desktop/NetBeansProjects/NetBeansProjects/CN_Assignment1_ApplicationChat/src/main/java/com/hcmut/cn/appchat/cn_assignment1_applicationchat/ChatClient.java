@@ -131,8 +131,9 @@ public class ChatClient {
         try {
             fromClient.writeUTF("Accept friend request");
             fromClient.writeUTF(username);
-            
+            System.out.println(username);
             response = toClient.readUTF();
+            System.out.println(response);
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
