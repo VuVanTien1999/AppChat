@@ -29,15 +29,9 @@ public class ReceiveThread extends Thread{
     private JLabel filename_label;
     private int port;
     private ChatWindow chatWindow;
-    
-    private ServerSocket serverSocket;
     private Socket returnSocket;
 
 
-    ReceiveThread(ServerSocket serverSocket, ChatWindow thisChatWD) {
-        
-        this.serverSocket = serverSocket;
-    }
 
     ReceiveThread(Socket returnSocket, ChatWindow correspondingChatWindow) {
         this.returnSocket = returnSocket;

@@ -31,6 +31,8 @@ public class ChatWindowThread extends Thread {
     
     public void run() {
         chatWindow = new ChatWindow(serverSocket, socketMessage, otherInfo, myInfo);
+        
+        System.out.println("In ChatWindowThread, chatWindow is close");
     }
     
     public ChatWindow getChatWindow() {

@@ -50,10 +50,8 @@ public class ListClientUI extends javax.swing.JFrame {
         
         // Get client list from ChatClient
         this.chatClient = chatClient;
-        //this.listClient = this.chatClient.getClientList();
-//        this.listOnlineClient = this.listClient.stream()
-//                .filter(client -> client.getActiveStatus())
-//                .collect(Collectors.toList());
+        this.listClient = this.chatClient.getClientList();
+        this.listOnlineClient = this.listClient.stream().filter(client -> client.getActiveStatus()).collect(Collectors.toList());
         this.listConnectedClient = new ArrayList<ClientInfo>();
         this.myInfo = chatClient.getMyInfo();
         
@@ -80,7 +78,13 @@ public class ListClientUI extends javax.swing.JFrame {
         }
         
         // Pass ServerSocket & connected client list to another thread then start itself
-        this.serverSocketThread = new ServerSocketThread(this.serverSocket, this.listConnectedClient, this.listClient, this.myInfo);
+        this.serverSocketThread = new ServerSocketThread(
+                this.serverSocket, 
+                listConnectedClient, 
+                this.listOnlineClient, 
+                myInfo,
+                this
+        );
         this.serverSocketThread.start();
 
         // Create models for three lists above
@@ -103,6 +107,11 @@ public class ListClientUI extends javax.swing.JFrame {
             listOnlineClient = listClient.stream()
                     .filter(client -> client.getActiveStatus())
                     .collect(Collectors.toList());
+
+            System.out.println("Time refreshList, listClient: " + listClient.size());
+            System.out.println("Time refreshList, listOnlineClient size: " + listOnlineClient.size());
+            System.out.println("Time refreshList, listConnectedClient size: " + listConnectedClient.size());
+
             listClient.forEach((client) -> {
                 if (client.getActiveStatus()) {
                     modelForOnlineUsers.addElement(client.getDisplayedName() + "(" + client.getUsername() + ")");
@@ -333,7 +342,8 @@ public class ListClientUI extends javax.swing.JFrame {
     private void onlineUserListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onlineUserListMouseClicked
         System.out.println("---Click Mouse on List------------------------");
         if (onlineUserList.getSelectedIndex() != -1) {
-            ClientInfo otherInfo = listClient.get(onlineUserList.getSelectedIndex());
+            ClientInfo otherInfo = this.listOnlineClient.get(onlineUserList.getSelectedIndex());
+
             System.out.println("Click on: " + otherInfo.getDisplayedName());
             this.printConnectedList();
                         
@@ -351,14 +361,17 @@ public class ListClientUI extends javax.swing.JFrame {
                 // Send my username to client who is being clicked
                 this.sendUsernameToOther(socketToOther);
 
-                ChatWindowThread chatWindowThread = new ChatWindowThread(
+                ChatWindow chatWindow = new ChatWindow(
                         this.serverSocket,
                         socketToOther,
                         otherInfo,
-                        myInfo
+                        myInfo,
+                        this
                 );
-                System.out.println("Socket send");
-                chatWindowThread.start();
+                
+                // After connect success, check if connection interrupted
+                // Remove B from connectList, B's chatWindow from chatWindowList
+                // Use join to wait for ChatWindowThread is executed
 
             } catch (IOException ex) {
                 Logger.getLogger(ListClientUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -366,7 +379,7 @@ public class ListClientUI extends javax.swing.JFrame {
             }
             
         }
-        
+        // UI clear selected index
         onlineUserList.clearSelection();
         System.out.println("---End Click Mouse on List------------------------");
     }//GEN-LAST:event_onlineUserListMouseClicked
@@ -495,4 +508,27 @@ public class ListClientUI extends javax.swing.JFrame {
     private javax.swing.JList<String> onlineUserList;
     private javax.swing.JLabel onlineUsersLabel;
     // End of variables declaration//GEN-END:variables
+
+    public ClientInfo getClientInfoInOnlineList(String receivedUsername) {
+        // method to get the ClientInfo from listOnlineClient in ListClientUI
+        // return null if there is no ClientInfo specified
+        
+        for (int i=0; i<listOnlineClient.size(); i++) {
+            ClientInfo tempClientInfo = listOnlineClient.get(i);
+            
+            if (tempClientInfo.getUsername().equals(receivedUsername)) {
+                return tempClientInfo;
+            }
+        }
+        return null;
+    }
+    
+    public List<ClientInfo> getConnectedList() {
+        System.out.println("In ListClientUI, listConenctedClient size: " + listConnectedClient.size());
+        return this.listConnectedClient;
+    }
+    
+    public List<ChatWindow> getChatWindowList() {
+        return this.serverSocketThread.getChatWindowList();
+    }
 }

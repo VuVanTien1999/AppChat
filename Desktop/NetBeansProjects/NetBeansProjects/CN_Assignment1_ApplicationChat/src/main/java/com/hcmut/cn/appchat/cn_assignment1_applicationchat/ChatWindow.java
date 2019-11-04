@@ -10,8 +10,14 @@ import com.hcmut.cn.appchat.cn_assignment1_applicationchat.SendOutFileThread;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ParallelSendThread;
 import java.net.Socket;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ReceiveThread;
+import java.awt.Color;
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
+import javax.swing.JFrame;
 
 /**
  *
@@ -31,20 +37,27 @@ public class ChatWindow extends javax.swing.JFrame {
     private ServerSocket serverSocket;
     private Socket socketSendFile;
     private ClientInfo myInfo;
+    private ListClientUI listClientUI;
+    private Socket socketToOther;
     
 
     public ChatWindow() {
         initComponents();
+        //setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         this.setVisible(true);
+        setBackground(Color.BLACK);
     }
 
     public ChatWindow(Socket socket) {
         
         this();
+        this.socketToOther = socket;
         client_read = new ReadClientThread(socket);
         client_write = new WriteClientThread(socket);
         
         client_read.setTextArea(area_msg_disp);
+        client_read.setChatWindow(this);
         client_read.start();
         
     }
@@ -61,7 +74,7 @@ public class ChatWindow extends javax.swing.JFrame {
         // for send message
         this.socketSendFile = socketSendFile;
         
-        otherInfo = new ClientInfo(socketSendFile.getInetAddress().getHostAddress(), socketSendFile.getPort());
+        
     }
 
     ChatWindow(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo) {
@@ -72,6 +85,11 @@ public class ChatWindow extends javax.swing.JFrame {
     ChatWindow(ServerSocket serverSocket, Socket socketMessage, ClientInfo otherInfo, ClientInfo myInfo) {
         this(serverSocket, socketMessage, otherInfo);
         this.myInfo = myInfo;
+    }
+
+    ChatWindow(ServerSocket serverSocket, Socket socketToOther, ClientInfo otherInfo, ClientInfo myInfo, ListClientUI listClientUI) {
+        this(serverSocket, socketToOther, otherInfo, myInfo);
+        this.listClientUI = listClientUI;
     }
 
     /**
@@ -94,6 +112,11 @@ public class ChatWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                chatWindowClosing(evt);
+            }
+        });
 
         btn_send.setText("Send");
         btn_send.addActionListener(new java.awt.event.ActionListener() {
@@ -139,20 +162,19 @@ public class ChatWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(filename_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btn_cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btn_send_file, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addGap(0, 0, Short.MAX_VALUE)
-                            .addComponent(btn_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(text_msg, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(btn_send, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(filename_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_send_file, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btn_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(text_msg, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btn_send, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -219,7 +241,7 @@ public class ChatWindow extends javax.swing.JFrame {
     private void btn_send_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_send_fileActionPerformed
         // TODO add your handling code here:
         
-        ParallelSendThread parallelSend = new ParallelSendThread(file, otherInfo);
+        ParallelSendThread parallelSend = new ParallelSendThread(file, otherInfo, myInfo);
         parallelSend.start();
         
         // handle 
@@ -227,6 +249,28 @@ public class ChatWindow extends javax.swing.JFrame {
         btn_cancel.setEnabled(false);
         btn_send_file.setEnabled(false);
     }//GEN-LAST:event_btn_send_fileActionPerformed
+
+    private void chatWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_chatWindowClosing
+        try {
+            // TODO add your handling code here:
+            
+            client_write.write("***EXIT***");
+            this.socketToOther.close();
+            
+            System.out.println("In ChatWindow, chatWindowClosing: " + this.otherInfo.getUsername());
+            
+            System.out.println("In ChatWindow, chatWindowClosing, getConnectedList size: " + listClientUI.getConnectedList().size());
+            listClientUI.getConnectedList().remove(this.otherInfo);
+            
+            System.out.println("In ChatWindow, window is closing");
+        } catch (IOException ex) {
+            Logger.getLogger(ChatWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
+        
+    }//GEN-LAST:event_chatWindowClosing
 
     
     /**
@@ -281,5 +325,21 @@ public class ChatWindow extends javax.swing.JFrame {
     
     public ClientInfo getMyInfo() {
         return myInfo;
+    }
+    
+    public List<ClientInfo> getConnectedList() {
+        return this.listClientUI.getConnectedList();
+    }
+    
+    public ClientInfo getOtherInfo() {
+        return this.otherInfo;
+    }
+    
+    public List<ChatWindow> getChatWindowList() {
+        return this.listClientUI.getChatWindowList();
+    }
+
+    void disableTextMsgField() {
+        this.text_msg.setEnabled(false);
     }
 }
