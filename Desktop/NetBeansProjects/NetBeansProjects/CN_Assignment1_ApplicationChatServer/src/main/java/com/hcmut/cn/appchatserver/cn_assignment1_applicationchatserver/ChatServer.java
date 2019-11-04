@@ -118,7 +118,7 @@ public class ChatServer {
         try {
             List<String> fileContent = new ArrayList<>(Files.readAllLines(fileName.toPath(), StandardCharsets.UTF_8));
         
-            for (int i = 0; i < fileContent.size(); i += 2) {
+            for (int i = 2; i < fileContent.size(); i += 2) {
                 String parts[] = fileContent.get(i).split(",", 4);                            
                 int numOfFriend = Integer.valueOf(parts[3]);
                 
