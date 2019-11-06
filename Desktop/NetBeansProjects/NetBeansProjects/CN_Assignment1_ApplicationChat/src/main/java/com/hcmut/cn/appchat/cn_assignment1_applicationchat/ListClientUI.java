@@ -362,7 +362,7 @@ public class ListClientUI extends javax.swing.JFrame {
                         this.serverSocket,
                         socketToOther,
                         otherInfo,
-                        myInfo,
+                        this.myInfo,
                         this
                 );
                 this.addToChatWindowList(chatWindow);
@@ -525,10 +525,6 @@ public class ListClientUI extends javax.swing.JFrame {
         System.out.println("In ListClientUI, listConenctedClient size: " + listConnectedClient.size());
         return this.listConnectedClient;
     }
-    
-//    private List<ChatWindow> getChatWindowList() {
-//        return this.serverSocketThread.getChatWindowList();
-//    }
 
     public List<ChatWindow> getChatWindowList() {
         return this.serverSocketThread.getChatWindowList();

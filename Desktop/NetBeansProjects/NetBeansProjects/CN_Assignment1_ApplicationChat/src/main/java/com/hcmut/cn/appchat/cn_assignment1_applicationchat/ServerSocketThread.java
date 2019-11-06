@@ -73,10 +73,10 @@ public class ServerSocketThread extends Thread{
                     // KHONG co receivedClientInfo trong connectedList
 
                     ChatWindow chatWindow = new ChatWindow(
-                            serverSocket,
+                            this.serverSocket,
                             returnSocket,
                             receivedClientInfo,
-                            myInfo,
+                            this.myInfo,
                             this.listClientUI
                     );
                     

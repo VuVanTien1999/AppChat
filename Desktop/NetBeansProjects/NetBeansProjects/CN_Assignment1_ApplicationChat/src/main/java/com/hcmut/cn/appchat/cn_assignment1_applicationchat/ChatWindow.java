@@ -90,6 +90,8 @@ public class ChatWindow extends javax.swing.JFrame {
         this(serverSocket, socketToOther, otherInfo, myInfo);
         this.listClientUI = listClientUI;
     }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
