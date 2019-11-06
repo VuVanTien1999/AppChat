@@ -67,9 +67,12 @@ public class ReceiveThread extends Thread{
                             String path = saveFileDialog.getDirectory();
                             String filename = saveFileDialog.getFile();
                             File newFile;
-                            if(filename.equals(file.getName())){
+                            if(filename.lastIndexOf('.') == -1){
+                                newFile = new File(path + filename + getFileExtension(file));
+                            }
+                            else{
                                 newFile = new File(path + filename);
-                            } else newFile = new File(path + filename + getFileExtension(file));
+                            };
                             newFile.createNewFile();
                             
                             Path file_get;
@@ -77,9 +80,9 @@ public class ReceiveThread extends Thread{
                             byte[] data = Files.readAllBytes(file_get);
                             
                             Files.write(Paths.get(newFile.getPath()), data);
-                            if(filename.equals(file.getName())){
-                                filename_label.setText(file.getName() + " is saved");
-                            } else filename_label.setText(filename + getFileExtension(file) + " is saved");
+                            if(filename.lastIndexOf('.') == -1){
+                                filename_label.setText(filename + getFileExtension(file) + " is saved");
+                            } else filename_label.setText(filename + " is saved");
                         }
                         
                     } catch (ClassNotFoundException ex) {
