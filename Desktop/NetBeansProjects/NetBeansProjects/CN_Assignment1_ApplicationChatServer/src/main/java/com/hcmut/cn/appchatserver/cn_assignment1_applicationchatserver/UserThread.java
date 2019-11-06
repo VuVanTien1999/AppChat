@@ -9,7 +9,6 @@ package com.hcmut.cn.appchatserver.cn_assignment1_applicationchatserver;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-
 import javafx.util.Pair;
 
 /**
@@ -74,7 +73,12 @@ public class UserThread extends Thread {
                         else {
                             this.usernameThread = username;
                             this.server.setInfoForOnlineUser(username, host, port);
+                            AccountProfile myProfile = this.server.getUserList().stream()
+                                    .filter(user -> user.getUsername().equals(this.usernameThread))
+                                    .findAny()
+                                    .orElse(null);
                             fromServer.writeUTF("true");
+                            fromServer.writeUTF(myProfile.getDisplayedName());
                             break;
                         }
                     }

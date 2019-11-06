@@ -8,7 +8,6 @@ import java.io.File;
 import java.awt.FileDialog;
 import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ParallelSendThread;
 import java.net.Socket;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ReceiveThread;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -32,7 +31,6 @@ public class ChatWindow extends javax.swing.JFrame {
     private WriteClientThread client_write;
     private File file;
     private ClientInfo otherInfo;
-    private ReceiveThread receiveThread;
     private ServerSocket serverSocket;
     private Socket socketSendFile;
     private ClientInfo myInfo;
@@ -64,8 +62,6 @@ public class ChatWindow extends javax.swing.JFrame {
     public ChatWindow(ServerSocket serverSocket, Socket socket) {
         this(socket);
         this.serverSocket = serverSocket;
-//        receiveThread = new ReceiveThread(serverSocket, this);
-//        receiveThread.start();
     }
 
     public ChatWindow(ServerSocket serverSocket, Socket socketMessage, Socket socketSendFile) {
@@ -87,8 +83,10 @@ public class ChatWindow extends javax.swing.JFrame {
     }
 
     ChatWindow(ServerSocket serverSocket, Socket socketToOther, ClientInfo otherInfo, ClientInfo myInfo, ListClientUI listClientUI) {
-        this(serverSocket, socketToOther, otherInfo, myInfo);
+        this(serverSocket, socketToOther, otherInfo);
         this.listClientUI = listClientUI;
+        this.myInfo = listClientUI.getMyInfo();
+        this.setTitle(otherInfo.getDisplayedName());
     }
     
     

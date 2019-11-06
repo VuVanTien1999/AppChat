@@ -58,7 +58,7 @@ public class ListClientUI extends javax.swing.JFrame {
         // Set ListClientUI to the center of the screen
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2 - this.getSize().width/2, dim.height/2 - this.getSize().height/2);
-        
+        this.setTitle(this.myInfo.getDisplayedName() + " (Username: " + this.myInfo.getUsername() + ")");
         // Set display mode of three lists in ListClientUI
         onlineUserList.setEnabled(true);
         offlineUserList.setEnabled(false);
@@ -119,12 +119,12 @@ public class ListClientUI extends javax.swing.JFrame {
             });
             
             List<String> tempListFriendRequest = chatClient.getFriendRequest();
-            if (tempListFriendRequest.size() > listFriendRequest.size()) {
-                for (int i = listFriendRequest.size(); i < tempListFriendRequest.size(); i++) {
-                    listFriendRequest.add(i, tempListFriendRequest.get(i));
-                    modelForFriendRequests.addElement(tempListFriendRequest.get(i));
+            tempListFriendRequest.forEach((request) -> {
+                if (!listFriendRequest.contains(request)) {
+                    listFriendRequest.add(request);
+                    modelForFriendRequests.addElement(request);
                 }
-            }  
+            });
         });
         refreshList.start();
     }
@@ -400,8 +400,10 @@ public class ListClientUI extends javax.swing.JFrame {
         }
         
         this.friendRequestList.clearSelection();
-        //this.listFriendRequest.remove(usernameRequest);
-        this.friendRequestList.remove(selectedIndex);
+        this.listFriendRequest.remove(usernameRequest);
+        ((DefaultListModel)this.friendRequestList.getModel()).remove(selectedIndex);
+        
+        this.listFriendRequest.remove(selectedIndex);
         this.btnAceptFriendRequest.setEnabled(false);
         this.btnDeclineFriendRequest.setEnabled(false);
     }//GEN-LAST:event_btnAceptFriendRequestActionPerformed
@@ -419,6 +421,9 @@ public class ListClientUI extends javax.swing.JFrame {
             System.out.println("Remove friend reuqest: " + usernameRequest);            
             
             this.friendRequestList.remove(selectedIndex);
+            ((DefaultListModel) this.friendRequestList.getModel()).remove(selectedIndex);
+
+            this.listFriendRequest.remove(selectedIndex);
         }
         
         this.friendRequestList.clearSelection();

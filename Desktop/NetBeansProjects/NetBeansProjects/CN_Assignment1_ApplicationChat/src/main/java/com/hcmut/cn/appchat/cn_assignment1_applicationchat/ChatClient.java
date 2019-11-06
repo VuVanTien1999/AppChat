@@ -74,7 +74,16 @@ public class ChatClient {
         }
         
         if (response.equals("true")) {
+            String displayedName = "";
+            try {
+                displayedName = toClient.readUTF();
+            } catch (IOException ex) {
+                System.out.println("Error writing to server: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+             
             this.myInfo.setUsername(username);
+            this.myInfo.setDisplayedName(displayedName);
         }
         
         return response;
