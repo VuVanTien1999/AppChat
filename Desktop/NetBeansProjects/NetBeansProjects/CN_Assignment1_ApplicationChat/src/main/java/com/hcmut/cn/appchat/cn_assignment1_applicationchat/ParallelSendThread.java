@@ -5,8 +5,6 @@
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
-import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +12,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 
 /**
  *
@@ -42,11 +41,15 @@ class ParallelSendThread extends Thread {
             
             // Send username for otherClient to get responding ChatWindow
             DataOutputStream clientOut = new DataOutputStream(newSocket.getOutputStream());
+            
             clientOut.writeUTF(this.myInfo.getUsername());
             //clientOut.close();
             
             ObjectOutputStream objOut = new ObjectOutputStream(newSocket.getOutputStream());
             objOut.writeObject(file);
+            
+            byte[] content = Files.readAllBytes(file.toPath());
+            objOut.writeObject(content);
             
         } catch (IOException ex) {
             Logger.getLogger(ParallelSendThread.class.getName()).log(Level.SEVERE, null, ex);

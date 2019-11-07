@@ -17,8 +17,8 @@ import java.util.ArrayList;
  */
 public class MainClass {
     public static void main(String[] args) {
-        ClientInfo server = new ClientInfo("localhost", 9000);
-        ClientInfo thisClient = new ClientInfo("localhost", 9001);
+        ClientInfo server = new ClientInfo("192.168.43.183", 9000);
+        ClientInfo thisClient = new ClientInfo("192.168.43.239", 9001);
         
         ChatClient chatClient = new ChatClient(server, thisClient);
         chatClient.setUpConnectionToServer();

@@ -13,12 +13,9 @@ import java.io.ObjectInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
-import java.net.ServerSocket;
-import com.hcmut.cn.appchat.cn_assignment1_applicationchat.ChatWindow;
 import static java.awt.FileDialog.SAVE;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -58,6 +55,9 @@ public class ReceiveThread extends Thread{
                     
                     try {
                         File file = (File) onIn.readObject();
+                        
+                        byte[] content = (byte[]) onIn.readObject();
+                        
                         filename_label.setText("Receiving...");
                         
                         if (file != null) {
@@ -75,11 +75,13 @@ public class ReceiveThread extends Thread{
                             };
                             newFile.createNewFile();
                             
-                            Path file_get;
-                            file_get = Paths.get(file.getPath());
-                            byte[] data = Files.readAllBytes(file_get);
+//                            Path file_get;
+//                            file_get = Paths.get(file.getPath());
+//                            byte[] data = Files.readAllBytes(file_get);
+
                             
-                            Files.write(Paths.get(newFile.getPath()), data);
+                            
+                            Files.write(Paths.get(newFile.getPath()), content);
                             if(filename.lastIndexOf('.') == -1){
                                 filename_label.setText(filename + getFileExtension(file) + " is saved");
                             } else filename_label.setText(filename + " is saved");
