@@ -253,7 +253,7 @@ public class ChatServer {
                 bool = "false";
                 notice = "You're friend already";
             }
-            else if (friendAccount.isRequestExited(username)) {
+            else if (friendAccount.isRequestExisted(username)) {
                 bool = "false";
                 notice = "Request has been sent before";
             }

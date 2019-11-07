@@ -101,17 +101,13 @@ public class AccountProfile {
     public void setActiveStatus(boolean status) {
         this.activeStatus = status;
     }
-        
-    public void acceptFriend(String newFriendUsername) {
-        this.numOfFriendRequest--;
-        this.friendRequestList.remove(newFriendUsername);
-        System.out.println("Accepted");
+            
+    public void setHost(String host) {
+        this.host = host;
     }
     
-    public void addFriend(String newFriendUsername) {
-        this.numOfFriend++;
-        this.friendList.add(newFriendUsername);
-        System.out.println("Fr added");
+    public void setPort(int port) {
+        this.port = port;
     }
     
     public void addNewFriendRequest(String newFriendUsername) {
@@ -125,15 +121,19 @@ public class AccountProfile {
         this.friendRequestList.remove(friendUsername);
     }
     
-    public boolean isRequestExited(String requestUsername) {
+    public boolean isRequestExisted(String requestUsername) {
         return this.friendRequestList.contains(requestUsername);
     }
     
-    public void setHost(String host) {
-        this.host = host;
+    public void acceptFriend(String newFriendUsername) {
+        this.numOfFriendRequest--;
+        this.friendRequestList.remove(newFriendUsername);
+        System.out.println("Accepted");
     }
     
-    public void setPort(int port) {
-        this.port = port;
-    } 
+    public void addFriend(String newFriendUsername) {
+        this.numOfFriend++;
+        this.friendList.add(newFriendUsername);
+        System.out.println("Fr added");
+    }   
 }

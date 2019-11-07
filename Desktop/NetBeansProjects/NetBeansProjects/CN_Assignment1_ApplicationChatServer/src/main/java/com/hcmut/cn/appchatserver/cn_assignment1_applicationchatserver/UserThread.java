@@ -65,24 +65,37 @@ public class UserThread extends Thread {
                     port = Integer.valueOf(toServer.readUTF());
 
                     //Read file and find acocunt info 
-                    if (server.isAccountValid(username, password)) {
-                        Pair<String, String> result = server.isAccountOnline(username);
-                        if (result.getKey().equals("true")) {
-                            fromServer.writeUTF("Login somewhere else");
-                        }
-                        else {
-                            this.usernameThread = username;
-                            this.server.setInfoForOnlineUser(username, host, port);
-                            AccountProfile myProfile = this.server.getUserList().stream()
+                    if (server.isAccountExisted(username)) {
+                        if (server.isAccountValid(username, password)) {
+                            Pair<String, String> result = server.isAccountOnline(username);
+                            
+                            if (result.getKey().equals("true")) {
+                                fromServer.writeUTF("true");
+                                fromServer.writeUTF("Login somewhere else");
+                            }
+                            else {
+                                this.usernameThread = username;
+                                this.server.setInfoForOnlineUser(username, host, port);
+
+                                AccountProfile myProfile = this.server.getUserList().stream()
                                     .filter(user -> user.getUsername().equals(this.usernameThread))
                                     .findAny()
                                     .orElse(null);
-                            fromServer.writeUTF("true");
-                            fromServer.writeUTF(myProfile.getDisplayedName());
-                            break;
+
+                                fromServer.writeUTF("true");                        
+                                fromServer.writeUTF(myProfile.getDisplayedName());
+                                break;
+                            }
+                        }
+                        else {
+                            fromServer.writeUTF("false");
+                            fromServer.writeUTF("Wrong username or password");
                         }
                     }
-                    else fromServer.writeUTF("false");
+                    else {
+                        fromServer.writeUTF("false");
+                        fromServer.writeUTF("Account isn't existed");
+                    }
                 }
             } while(true);
             
@@ -97,9 +110,7 @@ public class UserThread extends Thread {
                 
                 String incomingMessage = toServer.readUTF();
                 
-                if (incomingMessage.equals("Get list of users")) {
-                    //fromServer.writeUTF("Return list of users");
-                    
+                if (incomingMessage.equals("Get list of users")) {                    
                     // Return number of friend
                     fromServer.writeUTF(String.valueOf(myProfile.getNumOfFriend()));    
 
@@ -119,13 +130,10 @@ public class UserThread extends Thread {
                         fromServer.writeUTF(String.valueOf(temp.getPort()));
                     } 
                 }
-                else if (incomingMessage.equals("Get list of friend requests")) {
-                    //fromServer.writeUTF("Return list of friend requests");
-                    
+                else if (incomingMessage.equals("Get list of friend requests")) {                    
                     // Return number of friend request
-                    //System.out.println("Req: " + String.valueOf(myProfile.getNumOfFriendRequest()));
                     fromServer.writeUTF(String.valueOf(myProfile.getNumOfFriendRequest()));    
-                    //System.out.println("Req: " + String.valueOf(myProfile.getNumOfFriendRequest()));
+
                     String[] listFriendRequestsUsername = myProfile.getFriendReuqestUsername();    
                     for (int i = 0; i < myProfile.getNumOfFriendRequest(); i++) {
                         // Return friend request's info (Username)
@@ -154,7 +162,7 @@ public class UserThread extends Thread {
                 }
                 else if (incomingMessage.equals("Accept friend request")) {
                     String friendRequestUsername = toServer.readUTF();
-                    System.out.println(friendRequestUsername);
+
                     this.server.acceptFriend(usernameThread, friendRequestUsername);
                     
                     fromServer.writeUTF(friendRequestUsername + " and " + this.usernameThread + " has become friends");

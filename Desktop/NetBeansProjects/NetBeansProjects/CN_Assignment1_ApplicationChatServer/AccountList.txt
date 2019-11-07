@@ -2,10 +2,10 @@ Username,Password,Displayedname,NumOfFriend
 Friends
 a,b,c,4
 123,aa,aaa,aaaa
-aa,bb,c,3
-a,aaa,aaaa
-123,0000,a,3
-a,aaa,aaaa
+aa,bb,c,4
+a,aaa,aaaa,123
+123,0000,a,4
+a,aaa,aaaa,aa
 aaa,123,aaa123,3
 a,aa,123
 aaaa,123,aaaa123,3
