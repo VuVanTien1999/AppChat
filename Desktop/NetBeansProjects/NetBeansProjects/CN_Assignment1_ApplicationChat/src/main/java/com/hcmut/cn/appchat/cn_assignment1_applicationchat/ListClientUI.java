@@ -223,6 +223,7 @@ public class ListClientUI extends javax.swing.JFrame {
         jToggleButton1.setText("jToggleButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Hoa Quỳnh Communication System");
 
         onlineUserList.setFont(new java.awt.Font("Tahoma", 0, 15)); // NOI18N
         onlineUserList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);

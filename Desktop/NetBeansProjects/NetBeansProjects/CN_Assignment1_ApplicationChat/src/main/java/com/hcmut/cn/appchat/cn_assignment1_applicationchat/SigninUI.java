@@ -39,6 +39,7 @@ public class SigninUI extends javax.swing.JFrame {
         label3 = new java.awt.Label();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Hoa Quỳnh Communication System");
 
         buttonSignin.setText("Sign in");
         buttonSignin.addActionListener(new java.awt.event.ActionListener() {

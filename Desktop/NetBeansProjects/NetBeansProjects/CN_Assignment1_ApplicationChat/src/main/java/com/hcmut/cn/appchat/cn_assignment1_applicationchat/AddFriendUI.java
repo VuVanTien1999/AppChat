@@ -60,6 +60,7 @@ public class AddFriendUI extends javax.swing.JFrame {
         labelNoti = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Add Friend");
 
         inputUsernameForRequest.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         inputUsernameForRequest.addMouseListener(new java.awt.event.MouseAdapter() {
