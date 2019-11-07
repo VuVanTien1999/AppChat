@@ -5,6 +5,8 @@
  */
 package com.hcmut.cn.appchat.cn_assignment1_applicationchat;
 
+import javafx.util.Pair;
+
 /**
  *
  * @author nguye
@@ -31,18 +33,21 @@ public class LoginUI {
             }
 
             if (signin.isSignin()) {
-                String result = client.verifyAccount(signin.getUsernameSignin(), signin.getPasswordSignin());
-                if (result.equals("false")) {
-                    signin.setLabelNoti("Wrong username or password");
+                Pair<String, String> result = client.verifyAccount(signin.getUsernameSignin(), signin.getPasswordSignin());
+                
+                if (result.getKey().equals("false")) {
+                    signin.setLabelNoti(result.getValue());
                     signin.hideAccountInfo();
                 }
-                else if (result.equals("Login somewhere else")) {
-                    signin.setLabelNoti("Login somewhere else");
-                    signin.hideAccountInfo();
-                }
-                else if (result.equals("true")) {
-                    signin.setVisible(false);
-                    break;
+                else {
+                    if (result.getValue().equals("Login somewhere else")) {
+                        signin.setLabelNoti("Login somewhere else");
+                        signin.hideAccountInfo();
+                    }
+                    else {
+                        signin.setVisible(false);
+                        break;
+                    }
                 }
             }
             else {
@@ -67,7 +72,7 @@ public class LoginUI {
                             break;
                         }
                         else {
-                            signup.label.setText("Create acocunt failed. Try again");
+                            signup.label.setText("Username has been used. Try with another one");
                         }
                     }
                     else {

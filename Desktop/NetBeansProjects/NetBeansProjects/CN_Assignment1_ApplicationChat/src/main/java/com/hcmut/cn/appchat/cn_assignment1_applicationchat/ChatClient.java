@@ -13,6 +13,7 @@ import com.hcmut.cn.appchat.cn_assignment1_applicationchat.WriteClientThread;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*;
+import javafx.util.Pair;
 
 /**
  *
@@ -57,8 +58,8 @@ public class ChatClient {
         }
     }
     
-    public String verifyAccount(String username, char[] password) {
-        String response = "";
+    public Pair<String, String> verifyAccount(String username, char[] password) {
+        String response = "", response1 = "";
 
         try {
             fromClient.writeUTF("Verify account");
@@ -68,25 +69,26 @@ public class ChatClient {
             fromClient.writeUTF(String.valueOf(this.myInfo.getPort()));
                        
             response = toClient.readUTF();
+            response1 = toClient.readUTF();
         } catch (IOException ex) {
             System.out.println("Error writing to server: " + ex.getMessage());
             ex.printStackTrace();
         }
         
         if (response.equals("true")) {
-            String displayedName = "";
-            try {
-                displayedName = toClient.readUTF();
-            } catch (IOException ex) {
-                System.out.println("Error writing to server: " + ex.getMessage());
-                ex.printStackTrace();
+            if (response1.equals("Login somewhere else")) {
+                return new Pair<String, String>("true", "Login somewhere else");
             }
-             
-            this.myInfo.setUsername(username);
-            this.myInfo.setDisplayedName(displayedName);
+            else {
+                this.myInfo.setUsername(username);
+                this.myInfo.setDisplayedName(response1);
+                
+                return new Pair<String, String>("true", "Ok");
+            }
         }
-        
-        return response;
+        else {
+            return new Pair<String, String>(response, response1);
+        }
     }
     
     public boolean createAccount(String username, char[] password, String displayedName) {

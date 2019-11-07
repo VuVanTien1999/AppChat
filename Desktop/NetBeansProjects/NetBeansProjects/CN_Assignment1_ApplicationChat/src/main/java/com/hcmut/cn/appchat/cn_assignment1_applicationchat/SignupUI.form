@@ -31,32 +31,23 @@
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="label4" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="label2" alignment="0" pref="120" max="32767" attributes="0"/>
-                                  <Component id="label1" alignment="0" pref="120" max="32767" attributes="0"/>
-                                  <Component id="label3" alignment="0" pref="120" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="inputUsername" pref="160" max="32767" attributes="0"/>
-                                      <Component id="inputPassword" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="inputReenterPassword" min="-2" pref="160" max="-2" attributes="0"/>
-                                  <Component id="inputDisplayedname" alignment="0" min="-2" pref="160" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="label" min="-2" pref="240" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                          </Group>
+                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="label4" alignment="0" max="32767" attributes="0"/>
+                          <Component id="label2" alignment="0" pref="120" max="32767" attributes="0"/>
+                          <Component id="label1" alignment="0" pref="120" max="32767" attributes="0"/>
+                          <Component id="label3" alignment="0" pref="120" max="32767" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="inputUsername" pref="160" max="32767" attributes="0"/>
+                              <Component id="inputPassword" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="inputReenterPassword" min="-2" pref="160" max="-2" attributes="0"/>
+                          <Component id="inputDisplayedname" alignment="0" min="-2" pref="160" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="buttonSignup" pref="80" max="32767" attributes="0"/>
                           <Component id="checkBoxSignupConfirm" pref="80" max="32767" attributes="0"/>
@@ -69,6 +60,10 @@
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <Component id="label" min="-2" pref="360" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
